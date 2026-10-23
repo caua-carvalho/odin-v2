@@ -8,8 +8,8 @@ export function LoadingScreen({ className }: { className?: string }) {
       aria-label="Carregando"
     >
       <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-odin-graphite-700 border-t-odin-orange-500 rounded-full animate-spin" />
-        <p className="text-odin-graphite-400">Carregando...</p>
+        <div className="w-10 h-10 border-3 border-odin-graphite-700 border-t-odin-violet-500 rounded-full animate-spin" />
+        <p className="text-body text-odin-graphite-400">Carregando...</p>
       </div>
     </div>
   )
@@ -23,7 +23,7 @@ export function InlineLoading({ className, size = 'md' }: { className?: string; 
   }
   return (
     <div className={cn('flex items-center justify-center', className)}>
-      <div className={cn(sizes[size], 'border-odin-graphite-700 border-t-odin-orange-500 rounded-full animate-spin')} />
+      <div className={cn(sizes[size], 'border-odin-graphite-700 border-t-odin-violet-500 rounded-full animate-spin')} />
     </div>
   )
 }
@@ -31,8 +31,29 @@ export function InlineLoading({ className, size = 'md' }: { className?: string; 
 export function Skeleton({ className, width, height }: { className?: string; width?: string; height?: string }) {
   return (
     <div
-      className={cn('animate-pulse bg-odin-graphite-800 rounded', className)}
+      className={cn('animate-pulse bg-odin-graphite-800 rounded-lg', className)}
       style={{ width, height }}
     />
+  )
+}
+
+export function SkeletonText({ lines = 3, className }: { lines?: number; className?: string }) {
+  return (
+    <div className={cn('space-y-2', className)}>
+      {Array.from({ length: lines }).map((_, i) => (
+        <div key={i} className="h-4 bg-odin-graphite-800 rounded animate-pulse" style={{ width: i === lines - 1 ? '60%' : '100%' }} />
+      ))}
+    </div>
+  )
+}
+
+export function SkeletonCard({ className }: { className?: string }) {
+  return (
+    <div className={cn('bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50 p-4 animate-pulse space-y-3', className)}>
+      <div className="h-6 bg-odin-graphite-800 rounded w-3/4" />
+      <div className="h-4 bg-odin-graphite-800 rounded w-full" />
+      <div className="h-4 bg-odin-graphite-800 rounded w-5/6" />
+      <div className="h-4 bg-odin-graphite-800 rounded w-1/2" />
+    </div>
   )
 }

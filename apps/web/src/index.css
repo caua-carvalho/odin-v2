@@ -4,27 +4,44 @@
 
 @layer base {
   :root {
-    --background: 10 10 10;
-    --foreground: 250 250 250;
+    --color-bg: #000000;
+    --color-fg: #ffffff;
+    --color-muted: #9a9a9a;
+    --color-muted-strong: #bdbdbd;
+    --color-primary: #8052ff;
+    --color-accent: #ffb829;
+    --color-success: #15846e;
+    --color-error: #ef4444;
   }
 
   * {
     @apply border-odin-graphite-800;
   }
 
+  html {
+    @apply scroll-smooth;
+  }
+
   body {
-    @apply bg-odin-black text-white;
+    @apply bg-odin-black text-white antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   ::selection {
-    @apply bg-odin-orange-500/30 text-white;
+    @apply bg-odin-violet-500/30 text-white;
   }
 
-  /* Scrollbar */
+  /* Focus visible for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-odin-violet-500 ring-offset-2 ring-offset-odin-black;
+  }
+
+  /* Scrollbar - minimal */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
@@ -38,63 +55,377 @@
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-odin-graphite-600;
   }
+
+  ::-webkit-scrollbar-corner {
+    @apply bg-odin-black;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer components {
+  /* 
+     DESIGN.md: Primary Action Button - Filled violet pill, the sole interactive CTA
+     Background #8052ff, white text, 22.5px border-radius (pill), 14.4px vertical × 15.96px horizontal padding
+     PPNeueMontreal 14px weight 400 or 600, uppercase with 0.025em tracking
+  */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-odin-black disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-odin-black disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
   }
 
   .btn-primary {
-    @apply btn bg-odin-orange-500 text-white hover:bg-odin-orange-600 focus:ring-odin-orange-500;
+    @apply btn bg-odin-violet-500 text-white hover:bg-odin-violet-600 active:bg-odin-violet-700 focus-visible:ring-odin-violet-500;
   }
 
-  .btn-secondary {
-    @apply btn bg-odin-graphite-800 text-white hover:bg-odin-graphite-700 focus:ring-odin-graphite-500 border border-odin-graphite-700;
+  .btn-primary:active {
+    @apply scale-[0.98];
   }
 
+  /* DESIGN.md: Ghost Text Button - Underlined or bare text link, secondary action
+     No background, no border, color #ffffff or #9a9a9a. PPNeueMontreal 14px weight 400.
+  */
   .btn-ghost {
-    @apply btn bg-transparent text-odin-graphite-300 hover:bg-odin-graphite-800 hover:text-white focus:ring-odin-graphite-500;
+    @apply btn bg-transparent text-odin-graphite-300 hover:text-white hover:bg-transparent active:bg-transparent focus-visible:ring-odin-graphite-500 px-0 py-2;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .btn-ghost-sm {
+    @apply btn-ghost text-nav-label;
   }
 
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+    @apply btn bg-odin-crimson-600 text-white hover:bg-odin-crimson-700 active:bg-odin-crimson-800 focus-visible:ring-odin-crimson-500;
   }
 
+  .btn-danger:active {
+    @apply scale-[0.98];
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs gap-1.5;
+  }
+
+  .btn-lg {
+    @apply px-6 py-3 text-base gap-2;
+  }
+
+  .btn-icon {
+    @apply p-2.5 rounded-full;
+  }
+
+  .btn-icon-sm {
+    @apply p-1.5 rounded-full;
+  }
+
+  /* Inputs - minimal, no card-like appearance */
   .input {
-    @apply w-full rounded-lg bg-odin-graphite-900 border border-odin-graphite-700 px-4 py-2.5 text-white placeholder-odin-graphite-500 focus:outline-none focus:ring-2 focus:ring-odin-orange-500 focus:border-transparent transition-all duration-200;
+    @apply w-full rounded-lg bg-odin-graphite-950 border border-odin-graphite-800 px-4 py-2.5 text-white placeholder-odin-graphite-500 focus:outline-none focus:ring-2 focus:ring-odin-violet-500 focus:border-transparent transition-all duration-200;
   }
 
+  .input-sm {
+    @apply px-3 py-2 text-sm;
+  }
+
+  .input-lg {
+    @apply px-4 py-3 text-base;
+  }
+
+  .input-error {
+    @apply border-odin-crimson-500 focus:ring-odin-crimson-500;
+  }
+
+  .textarea {
+    @apply input resize-y min-h-[100px];
+  }
+
+  .label {
+    @apply block text-sm font-medium text-odin-graphite-300 mb-1.5;
+  }
+
+  .form-error {
+    @apply text-odin-crimson-400 text-sm mt-1;
+  }
+
+  /* 
+     DESIGN.md: No cards, no borders, no shadows - elements float on black with whitespace alone
+     Only use minimal containers when functionally necessary (grouping related interactive elements)
+  */
   .card {
-    @apply bg-odin-graphite-950 border border-odin-graphite-800 rounded-xl;
+    @apply bg-odin-graphite-950 border border-odin-graphite-800 rounded-2xl;
   }
 
   .card-hover {
-    @apply card hover:border-odin-graphite-700 transition-colors duration-200;
+    @apply card hover:border-odin-graphite-700 hover:bg-odin-graphite-900 transition-all duration-200;
   }
 
+  /* Panel - for functional grouping only, minimal */
+  .panel {
+    @apply bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50;
+  }
+
+  /* Badges - minimal */
   .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
 
-  .badge-orange {
-    @apply badge bg-odin-orange-500/20 text-odin-orange-400 border border-odin-orange-500/30;
+  .badge-primary {
+    @apply badge bg-odin-violet-500/15 text-odin-violet-400 border border-odin-violet-500/30;
   }
 
-  .badge-green {
-    @apply badge bg-green-500/20 text-green-400 border border-green-500/30;
+  .badge-accent {
+    @apply badge bg-odin-amber-500/15 text-odin-amber-400 border border-odin-amber-500/30;
   }
 
-  .badge-red {
-    @apply badge bg-red-500/20 text-red-400 border border-red-500/30;
+  .badge-success {
+    @apply badge bg-odin-emerald-500/15 text-odin-emerald-400 border border-odin-emerald-500/30;
   }
 
-  .badge-gray {
-    @apply badge bg-odin-graphite-700 text-odin-graphite-300;
+  .badge-error {
+    @apply badge bg-odin-crimson-500/15 text-odin-crimson-400 border border-odin-crimson-500/30;
   }
 
+  .badge-neutral {
+    @apply badge bg-odin-graphite-800 text-odin-graphite-400;
+  }
+
+  /* Status indicators */
+  .status-dot {
+    @apply inline-block w-2 h-2 rounded-full;
+  }
+
+  .status-dot-running {
+    @apply status-dot bg-odin-violet-500 animate-pulse;
+  }
+
+  .status-dot-waiting {
+    @apply status-dot bg-odin-amber-500 animate-pulse;
+  }
+
+  .status-dot-success {
+    @apply status-dot bg-odin-emerald-500;
+  }
+
+  .status-dot-error {
+    @apply status-dot bg-odin-crimson-500;
+  }
+
+  .status-dot-idle {
+    @apply status-dot bg-odin-graphite-500;
+  }
+
+  /* Skeletons */
   .skeleton {
-    @apply animate-pulse bg-odin-graphite-800 rounded;
+    @apply animate-pulse bg-odin-graphite-800 rounded-lg;
+  }
+
+  .skeleton-text {
+    @apply skeleton h-4 w-full;
+  }
+
+  .skeleton-title {
+    @apply skeleton h-6 w-3/4;
+  }
+
+  .skeleton-card {
+    @apply skeleton h-32 w-full;
+  }
+
+  /* Layout utilities */
+  .container-app {
+    @apply mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8; /* DESIGN.md: page max-width 1280px */
+  }
+
+  .section {
+    @apply space-y-6;
+  }
+
+  .section-header {
+    @apply flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4;
+  }
+
+  .page-header {
+    @apply mb-12; /* DESIGN.md: generous section gaps */
+  }
+
+  .page-title {
+    @apply text-heading text-white;
+  }
+
+  .page-subtitle {
+    @apply text-body text-odin-graphite-400 mt-2;
+  }
+
+  /* Dividers - minimal, only when needed */
+  .divider {
+    @apply border-t border-odin-graphite-800;
+  }
+
+  .divider-vertical {
+    @apply border-l border-odin-graphite-800 h-full;
+  }
+
+  /* Lists */
+  .list-divided > * + * {
+    @apply border-t border-odin-graphite-800 pt-4;
+  }
+
+  /* Tables - minimal */
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-odin-graphite-800;
+  }
+
+  .table {
+    @apply w-full text-sm;
+  }
+
+  .table th {
+    @apply px-4 py-3 text-left font-medium text-odin-graphite-400 uppercase tracking-wider bg-odin-graphite-950 border-b border-odin-graphite-800;
+  }
+
+  .table td {
+    @apply px-4 py-3 text-white border-b border-odin-graphite-800/50;
+  }
+
+  .table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .table tbody tr {
+    @apply transition-colors hover:bg-odin-graphite-900/50;
+  }
+
+  /* Code blocks */
+  .code-block {
+    @apply bg-odin-graphite-950 border border-odin-graphite-800 rounded-lg p-4 font-mono text-code-sm text-odin-graphite-200 overflow-x-auto;
+  }
+
+  .code-inline {
+    @apply bg-odin-graphite-900 px-1.5 py-0.5 rounded text-code-sm text-odin-graphite-200 font-mono;
+  }
+
+  /* Tooltips */
+  .tooltip {
+    @apply relative inline-block;
+  }
+
+  .tooltip-content {
+    @apply invisible absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 text-xs font-medium text-white bg-odin-graphite-900 border border-odin-graphite-700 rounded-lg shadow-elevated opacity-0 transition-opacity duration-200 whitespace-nowrap;
+  }
+
+  .tooltip:hover .tooltip-content {
+    @apply visible opacity-100;
+  }
+
+  /* Dropdown */
+  .dropdown {
+    @apply relative inline-block;
+  }
+
+  .dropdown-menu {
+    @apply absolute right-0 top-full mt-2 w-56 origin-top-right bg-odin-graphite-950 border border-odin-graphite-800 rounded-xl shadow-elevated ring-1 ring-black/50 animate-scale-in focus:outline-none;
+  }
+
+  .dropdown-item {
+    @apply w-full flex items-center gap-3 px-3 py-2 text-sm text-odin-graphite-300 hover:bg-odin-graphite-800 hover:text-white transition-colors;
+  }
+
+  .dropdown-item-danger {
+    @apply dropdown-item text-odin-crimson-400 hover:bg-odin-crimson-500/10;
+  }
+
+  .dropdown-divider {
+    @apply border-t border-odin-graphite-800 my-1;
+  }
+
+  /* Tabs - ghost style per DESIGN.md */
+  .tabs {
+    @apply flex gap-1 bg-transparent p-0;
+  }
+
+  .tab {
+    @apply py-2 px-4 rounded-lg text-sm font-medium transition-colors text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-900;
+  }
+
+  .tab-active {
+    @apply tab bg-odin-violet-500 text-white;
+  }
+
+  /* Empty states - minimal, centered on void */
+  .empty-state {
+    @apply flex flex-col items-center justify-center text-center py-16 px-4;
+  }
+
+  .empty-state-icon {
+    @apply w-16 h-16 text-odin-graphite-600 mb-4;
+  }
+
+  .empty-state-title {
+    @apply text-heading-xs text-white mb-2;
+  }
+
+  .empty-state-description {
+    @apply text-body text-odin-graphite-400 max-w-xs;
+  }
+
+  /* Loading states */
+  .loading-spinner {
+    @apply inline-block w-5 h-5 border-2 border-odin-graphite-700 border-t-odin-violet-500 rounded-full animate-spin;
+  }
+
+  .loading-spinner-sm {
+    @apply w-4 h-4 border-2;
+  }
+
+  .loading-spinner-lg {
+    @apply w-8 h-8 border-3;
+  }
+
+  /* Avatar */
+  .avatar {
+    @apply inline-flex items-center justify-center rounded-full bg-odin-violet-500 text-white font-medium;
+  }
+
+  .avatar-sm {
+    @apply avatar w-8 h-8 text-xs;
+  }
+
+  .avatar-md {
+    @apply avatar w-10 h-10 text-sm;
+  }
+
+  .avatar-lg {
+    @apply avatar w-12 h-12 text-base;
+  }
+
+  .avatar-xl {
+    @apply avatar w-16 h-16 text-lg;
+  }
+
+  /* Transitions */
+  .transition-base {
+    @apply transition-all duration-200;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .transition-fast {
+    @apply transition-all duration-100;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .transition-slow {
+    @apply transition-all duration-300;
+    transition-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
   }
 }
 
@@ -110,5 +441,53 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Gradient text utilities */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-odin-violet-400 to-odin-violet-600 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-odin-amber-400 to-odin-amber-600 bg-clip-text text-transparent;
+  }
+
+  /* Focus ring utilities */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-odin-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-odin-black;
+  }
+
+  .focus-ring-error {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-odin-crimson-500 focus-visible:ring-offset-2 focus-visible:ring-offset-odin-black;
+  }
+
+  /* DESIGN.md: Weight utilities */
+  .font-extralight {
+    font-weight: 200;
+  }
+
+  .font-regular {
+    font-weight: 400;
+  }
+
+  .font-semibold {
+    font-weight: 600;
+  }
+
+  .font-bold {
+    font-weight: 700;
+  }
+
+  /* Tracking utilities for headlines */
+  .tracking-tight-display {
+    letter-spacing: -0.04em;
+  }
+
+  .tracking-tight-heading {
+    letter-spacing: -0.02em;
+  }
+
+  .tracking-nav {
+    letter-spacing: 0.025em;
   }
 }

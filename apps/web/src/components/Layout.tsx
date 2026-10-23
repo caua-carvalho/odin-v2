@@ -35,18 +35,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - minimal, no card appearance */}
       <aside
         className={cn(
-          'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-odin-graphite-950 border-r border-odin-graphite-800 flex flex-col transition-transform duration-300 ease-in-out',
+          'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-odin-black border-r border-odin-graphite-800 flex flex-col transition-transform duration-300 ease-out-expo',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
         aria-label="Navegação principal"
       >
         <div className="flex h-16 items-center justify-between px-4 border-b border-odin-graphite-800">
-          <h1 className="text-xl font-bold text-odin-orange-500">ODIN V2</h1>
+          <h1 className="text-heading-sm text-odin-violet-500 font-regular tracking-tight">ODIN V2</h1>
           <button
-            className="lg:hidden p-2 rounded-lg text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-800"
+            className="lg:hidden p-2 rounded-lg text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-900 transition-colors"
             onClick={() => setSidebarOpen(false)}
             aria-label="Fechar menu"
           >
@@ -65,8 +65,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-odin-orange-500/10 text-odin-orange-400 border border-odin-orange-500/20'
-                    : 'text-odin-graphite-300 hover:text-white hover:bg-odin-graphite-800'
+                    ? 'text-odin-violet-400 bg-odin-graphite-900'
+                    : 'text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-900'
                 )}
                 onClick={() => setSidebarOpen(false)}
                 aria-current={isActive ? 'page' : undefined}
@@ -80,7 +80,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         <div className="p-4 border-t border-odin-graphite-800">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-8 h-8 rounded-full bg-odin-orange-500 flex items-center justify-center text-xs font-bold">
+            <div className="avatar-md">
               {user?.email?.[0].toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
@@ -90,7 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
           <button
             onClick={logout}
-            className="mt-3 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-odin-graphite-300 hover:text-red-400 hover:bg-odin-graphite-800 transition-colors"
+            className="mt-3 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-odin-graphite-300 hover:text-odin-crimson-400 hover:bg-odin-graphite-900 transition-colors"
           >
             <LogOut className="w-5 h-5" aria-hidden="true" />
             Sair
@@ -101,10 +101,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
         {/* Mobile header */}
-        <header className="lg:hidden h-16 bg-odin-graphite-950 border-b border-odin-graphite-800 flex items-center justify-between px-4">
-          <h1 className="text-xl font-bold text-odin-orange-500">ODIN V2</h1>
+        <header className="lg:hidden h-16 bg-odin-black border-b border-odin-graphite-800 flex items-center justify-between px-4">
+          <h1 className="text-heading-sm text-odin-violet-500 font-regular tracking-tight">ODIN V2</h1>
           <button
-            className="p-2 rounded-lg text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-800"
+            className="p-2 rounded-lg text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-900 transition-colors"
             onClick={() => setSidebarOpen(true)}
             aria-label="Abrir menu"
             aria-expanded={sidebarOpen}
@@ -113,7 +113,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </button>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 lg:p-6">
+        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>

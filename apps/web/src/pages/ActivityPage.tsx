@@ -20,18 +20,18 @@ import {
 
 const RUN_STATUS_CONFIG = {
   queued: { label: 'Na fila', color: 'text-odin-graphite-400', bg: 'bg-odin-graphite-700', icon: Clock },
-  running: { label: 'Executando', color: 'text-odin-orange-400', bg: 'bg-odin-orange-500/20 border-odin-orange-500/30', icon: Loader2 },
-  waiting_approval: { label: 'Aguardando aprovação', color: 'text-yellow-400', bg: 'bg-yellow-500/20 border-yellow-500/30', icon: AlertTriangle },
-  completed: { label: 'Concluído', color: 'text-green-400', bg: 'bg-green-500/20 border-green-500/30', icon: CheckCircle },
-  failed: { label: 'Falhou', color: 'text-red-400', bg: 'bg-red-500/20 border-red-500/30', icon: XCircle },
+  running: { label: 'Executando', color: 'text-odin-violet-400', bg: 'bg-odin-violet-500/20 border-odin-violet-500/30', icon: Loader2 },
+  waiting_approval: { label: 'Aguardando aprovação', color: 'text-odin-amber-400', bg: 'bg-odin-amber-500/20 border-odin-amber-500/30', icon: AlertTriangle },
+  completed: { label: 'Concluído', color: 'text-odin-emerald-400', bg: 'bg-odin-emerald-500/20 border-odin-emerald-500/30', icon: CheckCircle },
+  failed: { label: 'Falhou', color: 'text-odin-crimson-400', bg: 'bg-odin-crimson-500/20 border-odin-crimson-500/30', icon: XCircle },
   cancelled: { label: 'Cancelado', color: 'text-odin-graphite-400', bg: 'bg-odin-graphite-700', icon: XCircle },
   interrupted: { label: 'Interrompido', color: 'text-odin-graphite-400', bg: 'bg-odin-graphite-700', icon: Zap },
 } as const
 
 const APPROVAL_STATUS_CONFIG = {
-  pending: { label: 'Pendente', color: 'text-yellow-400', bg: 'bg-yellow-500/20 border-yellow-500/30', icon: Clock },
-  approved: { label: 'Aprovado', color: 'text-green-400', bg: 'bg-green-500/20 border-green-500/30', icon: CheckCircle },
-  denied: { label: 'Negado', color: 'text-red-400', bg: 'bg-red-500/20 border-red-500/30', icon: XCircle },
+  pending: { label: 'Pendente', color: 'text-odin-amber-400', bg: 'bg-odin-amber-500/20 border-odin-amber-500/30', icon: Clock },
+  approved: { label: 'Aprovado', color: 'text-odin-emerald-400', bg: 'bg-odin-emerald-500/20 border-odin-emerald-500/30', icon: CheckCircle },
+  denied: { label: 'Negado', color: 'text-odin-crimson-400', bg: 'bg-odin-crimson-500/20 border-odin-crimson-500/30', icon: XCircle },
   expired: { label: 'Expirado', color: 'text-odin-graphite-400', bg: 'bg-odin-graphite-700', icon: Clock },
 } as const
 
@@ -97,22 +97,22 @@ export function ActivityPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Atividade</h1>
-        <p className="text-odin-graphite-400 text-sm">Execuções do agente e aprovações pendentes</p>
+      <div className="mb-12">
+        <h1 className="text-heading font-regular tracking-tight">Atividade</h1>
+        <p className="text-body text-odin-graphite-400 mt-2">Execuções do agente e aprovações pendentes</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-odin-graphite-900 rounded-lg p-1">
+      {/* Tabs - ghost style */}
+      <div className="flex gap-2 mb-10">
         <button
           onClick={() => setActiveTab('runs')}
           className={cn(
-            'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+            'px-4 py-2 rounded-lg text-sm font-medium transition-colors text-nav-label',
             activeTab === 'runs'
-              ? 'bg-odin-orange-500 text-white'
-              : 'text-odin-graphite-400 hover:text-white'
+              ? 'text-white bg-odin-violet-500'
+              : 'text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-900'
           )}
         >
           Execuções
@@ -120,14 +120,15 @@ export function ActivityPage() {
         <button
           onClick={() => setActiveTab('approvals')}
           className={cn(
-            'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors',
+            'px-4 py-2 rounded-lg text-sm font-medium transition-colors text-nav-label relative',
             activeTab === 'approvals'
-              ? 'bg-odin-orange-500 text-white'
-              : 'text-odin-graphite-400 hover:text-white'
+              ? 'text-white bg-odin-violet-500'
+              : 'text-odin-graphite-400 hover:text-white hover:bg-odin-graphite-900'
           )}
         >
-          Aprovações {approvals.filter(a => a.status === 'pending').length > 0 && (
-            <span className="ml-2 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
+          Aprovações
+          {approvals.filter(a => a.status === 'pending').length > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-odin-crimson-500 text-white text-xs rounded-full flex items-center justify-center">
               {approvals.filter(a => a.status === 'pending').length}
             </span>
           )}
@@ -161,10 +162,10 @@ function RunsList({ runs, expandedRun, onToggleExpand }: {
 }) {
   if (runs.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-odin-graphite-500">
-        <Terminal className="w-12 h-12 mb-3 opacity-50" />
-        <h3 className="text-lg font-medium mb-1">Nenhuma execução ainda</h3>
-        <p className="text-sm">Inicie uma conversa no Chat para ver execuções aqui</p>
+      <div className="flex flex-col items-center justify-center py-16 text-odin-graphite-500">
+        <Terminal className="w-12 h-12 mb-3 opacity-30" />
+        <h3 className="text-heading-xs font-regular mb-1">Nenhuma execução ainda</h3>
+        <p className="text-body">Inicie uma conversa no Chat para ver execuções aqui</p>
       </div>
     )
   }
@@ -178,30 +179,30 @@ function RunsList({ runs, expandedRun, onToggleExpand }: {
         const events = run.events || []
 
         return (
-          <div key={run.id} className="card overflow-hidden">
+          <div key={run.id} className="group">
             <button
               onClick={() => onToggleExpand(run.id)}
-              className="w-full p-4 flex items-center gap-4 hover:bg-odin-graphite-900 transition-colors text-left"
+              className="w-full flex items-center gap-4 p-4 bg-odin-graphite-950/50 rounded-2xl hover:bg-odin-graphite-950 transition-colors text-left"
             >
-              <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', statusConfig.bg)}>
+              <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', statusConfig.bg)}>
                 <StatusIcon className={cn('w-5 h-5', statusConfig.color)} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-white truncate">
+                  <span className="font-mono text-sm text-odin-graphite-300 truncate">
                     {run.conversation_id.slice(0, 8)}...
                   </span>
-                  <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', statusConfig.bg, statusConfig.color)}>
+                  <span className={cn('px-2 py-0.5 rounded-full text-nav-label', statusConfig.bg, statusConfig.color)}>
                     {statusConfig.label}
                   </span>
                 </div>
-                <p className="text-odin-graphite-400 text-sm truncate mt-1">
+                <p className="text-body-sm text-odin-graphite-400 truncate mt-1">
                   Iniciado em {formatDate(run.started_at)}
                 </p>
               </div>
               <div className="flex items-center gap-2 text-odin-graphite-400">
                 {run.completed_at && (
-                  <span className="text-sm">
+                  <span className="text-sm font-mono">
                     {run.started_at && run.completed_at && (
                       <>
                         {Math.round((new Date(run.completed_at).getTime() - new Date(run.started_at).getTime()) / 1000)}s
@@ -214,24 +215,24 @@ function RunsList({ runs, expandedRun, onToggleExpand }: {
             </button>
 
             {isExpanded && (
-              <div className="border-t border-odin-graphite-800 bg-odin-black/50 p-4">
+              <div className="mt-3 p-4 bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50 animate-slide-down">
                 {run.result_summary && (
-                  <div className="mb-4 p-3 bg-odin-graphite-900 rounded-lg">
-                    <p className="text-sm text-odin-graphite-300 font-mono whitespace-pre-wrap">
+                  <div className="mb-4 p-4 bg-odin-black rounded-xl">
+                    <p className="text-code-sm text-odin-graphite-300 font-mono whitespace-pre-wrap">
                       {run.result_summary}
                     </p>
                   </div>
                 )}
                 {run.error && (
-                  <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                    <p className="text-sm text-red-300 font-mono whitespace-pre-wrap">
+                  <div className="mb-4 p-4 bg-odin-crimson-500/10 border border-odin-crimson-500/20 rounded-xl">
+                    <p className="text-code-sm text-odin-crimson-300 font-mono whitespace-pre-wrap">
                       {run.error}
                     </p>
                   </div>
                 )}
                 {events.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-odin-graphite-300 mb-2">Eventos</h4>
+                    <h4 className="text-nav-label text-odin-graphite-300 mb-2">Eventos</h4>
                     {events.map((event, idx) => (
                       <EventRow key={idx} event={event} />
                     ))}
@@ -259,13 +260,15 @@ function EventRow({ event }: { event: RunEvent }) {
   const Icon = icons[event.type] || MessageSquare
 
   return (
-    <div className="flex items-start gap-2 text-xs text-odin-graphite-300 font-mono">
-      <Icon className="w-4 h-4 mt-0.5 flex-shrink-0 text-odin-orange-500" />
+    <div className="flex items-start gap-3 text-code-sm text-odin-graphite-300 font-mono p-3 bg-odin-black rounded-xl">
+      <Icon className="w-4 h-4 mt-0.5 flex-shrink-0 text-odin-violet-500" />
       <div className="flex-1 min-w-0">
-        <span className="text-odin-graphite-400">{formatDate(event.timestamp)}</span>
-        <span className="mx-1">•</span>
-        <span className="text-odin-orange-400">{event.type}</span>
-        <pre className="mt-1 text-odin-graphite-300 whitespace-pre-wrap break-all text-[11px]">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-odin-graphite-500">{formatDate(event.timestamp)}</span>
+          <span className="w-1 h-1 rounded-full bg-odin-graphite-600" />
+          <span className="text-odin-violet-400">{event.type}</span>
+        </div>
+        <pre className="text-odin-graphite-400 whitespace-pre-wrap break-all text-[11px]">
           {JSON.stringify(event.data, null, 2).slice(0, 300)}
         </pre>
       </div>
@@ -283,21 +286,19 @@ function ApprovalsList({ approvals, onApprove, onDeny }: {
 
   if (approvals.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 text-odin-graphite-500">
-        <Shield className="w-12 h-12 mb-3 opacity-50" />
-        <h3 className="text-lg font-medium mb-1">Nenhuma aprovação</h3>
-        <p className="text-sm">Operações que exigem sua aprovação aparecerão aqui</p>
+      <div className="flex flex-col items-center justify-center py-16 text-odin-graphite-500">
+        <Shield className="w-12 h-12 mb-3 opacity-30" />
+        <h3 className="text-heading-xs font-regular mb-1">Nenhuma aprovação</h3>
+        <p className="text-body">Operações que exigem sua aprovação aparecerão aqui</p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {pendingApprovals.length > 0 && (
         <section>
-          <h3 className="text-sm font-medium text-odin-graphite-400 uppercase tracking-wider mb-3">
-            Pendentes ({pendingApprovals.length})
-          </h3>
+          <h3 className="text-nav-label text-odin-graphite-300 mb-4">Pendentes ({pendingApprovals.length})</h3>
           <div className="space-y-3">
             {pendingApprovals.map(approval => (
               <ApprovalCard
@@ -313,9 +314,7 @@ function ApprovalsList({ approvals, onApprove, onDeny }: {
 
       {resolvedApprovals.length > 0 && (
         <section>
-          <h3 className="text-sm font-medium text-odin-graphite-400 uppercase tracking-wider mb-3">
-            Resolvidas
-          </h3>
+          <h3 className="text-nav-label text-odin-graphite-300 mb-4">Resolvidas</h3>
           <div className="space-y-2">
             {resolvedApprovals.slice(0, 10).map(approval => (
               <ApprovalCard
@@ -343,22 +342,22 @@ function ApprovalCard({ approval, onApprove, onDeny, readonly = false }: {
   const StatusIcon = statusConfig.icon
 
   return (
-    <div className="card p-4">
+    <div className="p-4 bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50">
       <div className="flex items-start gap-4">
-        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', statusConfig.bg)}>
+        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', statusConfig.bg)}>
           <StatusIcon className={cn('w-5 h-5', statusConfig.color)} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-mono text-sm text-odin-graphite-300">{approval.operation}</span>
-            <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium', statusConfig.bg, statusConfig.color)}>
+            <span className={cn('px-2 py-0.5 rounded-full text-nav-label', statusConfig.bg, statusConfig.color)}>
               {statusConfig.label}
             </span>
           </div>
-          <p className="text-odin-graphite-400 text-sm mt-1 font-mono">
+          <p className="text-body-sm text-odin-graphite-400 mt-1 font-mono">
             {JSON.stringify(approval.details).slice(0, 100)}
           </p>
-          <p className="text-odin-graphite-500 text-xs mt-2">
+          <p className="text-caption text-odin-graphite-500 mt-2">
             Criado em {formatDate(approval.created_at)}
             {approval.expires_at && ` • Expira em ${formatDate(approval.expires_at)}`}
           </p>

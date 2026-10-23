@@ -29,23 +29,23 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-odin-orange-500 mb-2">ODIN V2</h1>
-          <p className="text-odin-graphite-400">Entre para continuar</p>
+      <div className="w-full max-w-md animate-fade-in">
+        <div className="text-center mb-10">
+          <h1 className="text-display-md text-odin-violet-500 font-medium tracking-tight mb-3">ODIN V2</h1>
+          <p className="text-body text-odin-graphite-400">Entre para continuar</p>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm" role="alert">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-odin-crimson-500/10 border border-odin-crimson-500/20 text-odin-crimson-400 text-sm" role="alert">
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-odin-graphite-300 mb-1.5">
+              <label htmlFor="email" className="label">
                 Email
               </label>
               <div className="relative">
@@ -65,7 +65,7 @@ export function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-odin-graphite-300 mb-1.5">
+              <label htmlFor="password" className="label">
                 Senha
               </label>
               <div className="relative">
@@ -84,7 +84,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-odin-graphite-500 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-odin-graphite-500 hover:text-white transition-colors"
                   aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}

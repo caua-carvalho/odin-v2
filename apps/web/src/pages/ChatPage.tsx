@@ -283,28 +283,28 @@ export function ChatPage() {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col max-w-4xl mx-auto w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
           <button
             onClick={handleNewChat}
-            className="btn-secondary"
+            className="btn-ghost"
             aria-label="Nova conversa"
           >
             <Plus className="w-5 h-5" />
-            <span className="hidden sm:inline">Nova conversa</span>
+            <span>Nova conversa</span>
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {run && run.status === 'running' && (
-            <span className="flex items-center gap-2 text-sm text-odin-orange-400">
+            <span className="flex items-center gap-2 text-sm text-odin-violet-400">
               <Loader2 className="w-4 h-4 animate-spin" />
               Executando...
             </span>
           )}
           {run && run.status === 'waiting_approval' && (
-            <span className="flex items-center gap-2 text-sm text-yellow-400">
+            <span className="flex items-center gap-2 text-sm text-odin-amber-400">
               <AlertTriangle className="w-4 h-4" />
               Aguardando aprovação
             </span>
@@ -314,8 +314,8 @@ export function ChatPage() {
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Conversation list (mobile drawer or sidebar) */}
-        <div className="lg:hidden mb-4">
+        {/* Conversation selector (mobile) */}
+        <div className="lg:hidden mb-6">
           <select
             value={currentConversation?.id || ''}
             onChange={(e) => e.target.value && selectConversation(e.target.value)}
@@ -331,21 +331,21 @@ export function ChatPage() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-4 pb-4">
+        <div className="flex-1 overflow-y-auto space-y-6 pb-6">
           {messages.length === 0 && !currentConversation && (
-            <div className="flex-1 flex flex-col items-center justify-center text-odin-graphite-500">
-              <Bot className="w-16 h-16 mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">Bem-vindo ao ODIN V2</h3>
-              <p className="text-sm text-center max-w-xs">
+            <div className="flex-1 flex flex-col items-center justify-center text-odin-graphite-500 py-16">
+              <Bot className="w-16 h-16 mb-4 opacity-30" />
+              <h3 className="text-heading-xs font-regular mb-2">Bem-vindo ao ODIN V2</h3>
+              <p className="text-body text-center max-w-xs">
                 Selecione uma conversa ao lado ou inicie uma nova para começar.
               </p>
             </div>
           )}
 
           {messages.length === 0 && currentConversation && (
-            <div className="flex-1 flex flex-col items-center justify-center text-odin-graphite-500">
-              <Bot className="w-12 h-12 mb-3 opacity-50" />
-              <p className="text-sm">Nenhuma mensagem ainda. Envie a primeira!</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-odin-graphite-500 py-16">
+              <Bot className="w-12 h-12 mb-3 opacity-30" />
+              <p className="text-body">Nenhuma mensagem ainda. Envie a primeira!</p>
             </div>
           )}
 
@@ -355,15 +355,15 @@ export function ChatPage() {
 
           {sending && (
             <div className="flex justify-start">
-              <div className="flex items-center gap-2 max-w-[80%]">
-                <div className="w-8 h-8 rounded-full bg-odin-orange-500 flex items-center justify-center flex-shrink-0">
+              <div className="flex items-center gap-3 max-w-[80%]">
+                <div className="w-8 h-8 rounded-full bg-odin-violet-500 flex items-center justify-center flex-shrink-0">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
-                <div className="bg-odin-graphite-800 rounded-2xl px-4 py-2">
+                <div className="bg-odin-graphite-950 rounded-2xl px-4 py-3">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 rounded-full bg-odin-orange-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 rounded-full bg-odin-orange-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 rounded-full bg-odin-orange-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-odin-violet-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-odin-violet-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-odin-violet-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -374,8 +374,8 @@ export function ChatPage() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-odin-graphite-800 pt-4">
-          <form onSubmit={(e) => { e.preventDefault(); sendMessage(inputValue); setInputValue(''); }} className="flex gap-2">
+        <div className="border-t border-odin-graphite-800 pt-6 mt-auto">
+          <form onSubmit={(e) => { e.preventDefault(); sendMessage(inputValue); setInputValue(''); }} className="flex gap-3">
             <textarea
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
@@ -393,7 +393,7 @@ export function ChatPage() {
             />
             <button
               type="submit"
-              className="btn-primary self-end mb-1 disabled:opacity-50"
+              className="btn-primary self-end disabled:opacity-50"
               disabled={!inputValue.trim() || sending}
               aria-label="Enviar mensagem"
             >
@@ -403,7 +403,7 @@ export function ChatPage() {
               <button
                 type="button"
                 onClick={stopRun}
-                className="btn-danger self-end mb-1"
+                className="btn-danger self-end"
                 aria-label="Parar execução"
               >
                 <X className="w-5 h-5" />
@@ -425,14 +425,14 @@ function MessageBubble({ message }: { message: Message }) {
     return (
       <div className="flex justify-start">
         <div className={cn(
-          'max-w-[85%] rounded-2xl px-4 py-2 text-sm font-mono text-xs',
+          'max-w-[85%] rounded-2xl px-4 py-3 text-sm font-mono text-code-sm',
           isError
-            ? 'bg-red-500/10 border border-red-500/20 text-red-300'
-            : 'bg-odin-graphite-800 text-odin-graphite-300'
+            ? 'bg-odin-crimson-500/10 border border-odin-crimson-500/20 text-odin-crimson-300'
+            : 'bg-odin-graphite-950 text-odin-graphite-300'
         )}>
-          <div className="flex items-center gap-2 mb-1">
-            <Terminal className="w-4 h-4" />
-            <span className="font-medium">Ferramenta</span>
+          <div className="flex items-center gap-2 mb-2">
+            <Terminal className="w-4 h-4 text-odin-violet-500" />
+            <span className="font-medium text-white">Ferramenta</span>
           </div>
           <pre className="whitespace-pre-wrap break-words">{message.content}</pre>
         </div>
@@ -443,20 +443,20 @@ function MessageBubble({ message }: { message: Message }) {
   return (
     <div className={cn('flex gap-3', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-odin-orange-500 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-odin-violet-500 flex items-center justify-center flex-shrink-0">
           <Bot className="w-5 h-5 text-white" />
         </div>
       )}
       <div className={cn(
-        'max-w-[85%] rounded-2xl px-4 py-2.5',
+        'max-w-[85%] rounded-2xl px-4 py-3',
         isUser
-          ? 'bg-odin-orange-500 text-white rounded-br-md'
-          : 'bg-odin-graphite-800 text-white rounded-bl-md'
+          ? 'bg-odin-violet-500 text-white rounded-br-md'
+          : 'bg-odin-graphite-950 text-white rounded-bl-md'
       )}>
-        <div className="whitespace-pre-wrap break-words">{message.content}</div>
+        <div className="whitespace-pre-wrap break-words text-body">{message.content}</div>
       </div>
       {isUser && (
-        <div className="w-8 h-8 rounded-full bg-odin-graphite-700 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-odin-graphite-800 flex items-center justify-center flex-shrink-0">
           <User className="w-5 h-5 text-white" />
         </div>
       )}
