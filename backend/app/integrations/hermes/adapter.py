@@ -66,10 +66,24 @@ class HermesSession:
                 if self._closed:
                     break
                 try:
-                    data = json.loads(message)
-                    self.message_handler(data)
-                except json.JSONDecodeError:
-                    logger.warning(f"Invalid JSON from Hermes: {message[:200]}")
+                    # Hermes PTY stream mixes JSON messages with raw terminal output
+                    # Only process valid JSON lines
+                    if isinstance(message, bytes):
+                        message = message.decode('utf-8', errors='ignore')
+                    
+                    # Try to parse each line as JSON
+                    for line in message.splitlines():
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            data = json.loads(line)
+                            self.message_handler(data)
+                        except json.JSONDecodeError:
+                            # Ignore non-JSON lines (ANSI escape codes, terminal output)
+                            pass
+                except Exception as e:
+                    logger.warning(f"Error processing Hermes message: {e}")
         except ConnectionClosed:
             logger.info(f"Hermes connection closed for session {self.session_id}")
         except WebSocketException as e:
@@ -121,17 +135,18 @@ class HermesAdapter:
         self._sessions: Dict[str, HermesSession] = {}
         self._connect_lock = asyncio.Lock()
 
-    def _ws_url(self, endpoint: str = "/api/pty") -> str:
-        """Convert HTTP URL to WebSocket URL."""
+    def _ws_url(self, endpoint: str = "/api/pty", hermes_session_id: Optional[str] = None) -> str:
+        """Convert HTTP URL to WebSocket URL with auth token."""
         ws_base = self.base_url.replace("http://", "ws://").replace("https://", "wss://")
-        return f"{ws_base}{endpoint}"
-
-    def _headers(self) -> Dict[str, str]:
-        """Headers for WebSocket connection."""
-        headers = {}
+        url = f"{ws_base}{endpoint}"
+        params = []
         if self.session_token:
-            headers["X-Hermes-Session-Token"] = self.session_token
-        return headers
+            params.append(f"token={self.session_token}")
+        if hermes_session_id:
+            params.append(f"session_id={hermes_session_id}")
+        if params:
+            url += "?" + "&".join(params)
+        return url
 
     async def create_session(
         self,
@@ -149,10 +164,8 @@ class HermesAdapter:
                 else:
                     del self._sessions[session_id]
 
-            # Build connection URL
-            url = self._ws_url("/api/pty")
-            if hermes_session_id:
-                url += f"?session_id={hermes_session_id}"
+            # Build connection URL with token as query param
+            url = self._ws_url("/api/pty", hermes_session_id)
 
             logger.info(f"Connecting to Hermes at {url}")
 
@@ -160,7 +173,6 @@ class HermesAdapter:
                 websocket = await asyncio.wait_for(
                     websockets.connect(
                         url,
-                        extra_headers=self._headers(),
                         open_timeout=self.settings.hermes_connect_timeout,
                         ping_interval=20,
                         ping_timeout=10,

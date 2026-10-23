@@ -46,7 +46,7 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
-class UserResponse(BaseModel):
+class UserResponse(BaseSchema):
     id: str
     email: EmailStr
     is_active: bool

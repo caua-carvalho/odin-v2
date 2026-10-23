@@ -10,6 +10,7 @@ from structlog import get_logger
 from app.core.config import get_settings
 from app.core.database import close_db, init_db
 from app.core.security import revoke_all_user_sessions
+from app.integrations.hermes.adapter import init_hermes_adapter, close_hermes_adapter
 from app.api.routes import health, auth, conversations, runs, approvals, knowledge, system
 
 logger = get_logger()
@@ -23,11 +24,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting ODIN V2 Backend", version="0.1.0")
     await init_db()
     logger.info("Database initialized")
+    await init_hermes_adapter()
+    logger.info("Hermes adapter initialized")
 
     yield
 
     # Shutdown
     logger.info("Shutting down ODIN V2 Backend")
+    await close_hermes_adapter()
+    logger.info("Hermes adapter closed")
     await close_db()
     logger.info("Database connections closed")
 

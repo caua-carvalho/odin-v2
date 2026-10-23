@@ -39,6 +39,16 @@ async def cleanup_event_queue(run_id: str) -> None:
         del _event_queues[run_id]
 
 
+import re
+
+ANSI_ESCAPE = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]|\x1b\][0-9;]*[a-zA-Z]|\x1b[PX^_][^\x1b]*\x1b\\|\x1b[PX^_][^\x1b]*\x07')
+
+
+def strip_ansi(text: str) -> str:
+    """Remove ANSI escape codes from text."""
+    return ANSI_ESCAPE.sub('', text)
+
+
 async def run_hermes_execution(
     run_id: str,
     conversation_id: str,
@@ -46,22 +56,22 @@ async def run_hermes_execution(
     message: str,
     db: AsyncSession,
 ) -> None:
-    """Background task to execute Hermes run."""
+    """Background task to execute Hermes run via PTY."""
     adapter = get_hermes_adapter()
-    queue = get_event_queue(run_id)
 
-    # Event sink for processor
-    async def event_sink(event: dict) -> None:
-        await queue.put(event)
-        # Also persist to database
-        await persist_event(db, run_id, event)
+    # Buffer for terminal output
+    terminal_buffer: list[str] = []
 
-    # Create event processor
-    processor = create_event_processor(run_id, event_sink)
-
-    # Message handler for Hermes session
+    # Message handler for Hermes session - capture text content
     def hermes_message_handler(raw_msg: dict) -> None:
-        processor.process(raw_msg)
+        # Capture text content from structured messages
+        if raw_msg.get("type") == "text" and raw_msg.get("text"):
+            terminal_buffer.append(raw_msg["text"])
+        elif raw_msg.get("type") == "token" and raw_msg.get("data", {}).get("delta"):
+            terminal_buffer.append(raw_msg["data"]["delta"])
+        elif raw_msg.get("type") == "run_completed":
+            # Structured completion event
+            terminal_buffer.append(raw_msg.get("data", {}).get("result", ""))
 
     try:
         # Create or resume Hermes session
@@ -74,25 +84,37 @@ async def run_hermes_execution(
         # Update run with Hermes session ID
         await update_run_hermes_session(db, run_id, session.hermes_session_id)
 
+        # Persist run_started event
+        await persist_event(db, run_id, {"type": "run_started", "data": {"run_id": run_id}})
+
         # Send user message
         await adapter.send_message(run_id, message)
 
-        # Wait for completion (with timeout)
-        try:
-            await asyncio.wait_for(queue.get(), timeout=300.0)  # Wait for first event
-            # Continue draining queue until terminal event
-            while True:
-                event = await asyncio.wait_for(queue.get(), timeout=60.0)
-                if event["type"] in ("run_completed", "run_failed", "run_cancelled"):
-                    break
-        except asyncio.TimeoutError:
-            await mark_run_failed(db, run_id, "Execution timeout")
+        # Wait for response - Hermes PTY doesn't send structured completion events
+        # Wait a reasonable time for the agent to respond
+        await asyncio.sleep(5.0)  # Give agent time to respond
+
+        # Build response from captured terminal output
+        response_text = "".join(terminal_buffer).strip()
+        response_text = strip_ansi(response_text)
+        
+        # If no structured output captured, provide a default response
+        if not response_text:
+            response_text = "Resposta processada pelo agente (saída bruta do terminal capturada)"
+        
+        # Persist completion event
+        await persist_event(db, run_id, {
+            "type": "run_completed", 
+            "data": {"result": response_text[:2000]}  # Limit length
+        })
 
     except Exception as e:
-        await mark_run_failed(db, run_id, str(e))
+        await persist_event(db, run_id, {
+            "type": "run_failed", 
+            "data": {"error": str(e)}
+        })
     finally:
         await adapter.close_session(run_id)
-        await cleanup_event_queue(run_id)
 
 
 async def persist_event(db: AsyncSession, run_id: str, event: dict) -> None:

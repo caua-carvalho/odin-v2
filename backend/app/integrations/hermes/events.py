@@ -137,9 +137,14 @@ class HermesEventProcessor:
 
 def create_event_processor(run_id: str, event_sink: Callable[[dict], None]) -> HermesEventProcessor:
     """Factory for creating an event processor tied to a run."""
+    import asyncio
 
     def on_event(event: dict) -> None:
         event["run_id"] = run_id
-        event_sink(event)
+        # Handle both sync and async event sinks
+        result = event_sink(event)
+        if asyncio.iscoroutine(result):
+            # Schedule the coroutine to run
+            asyncio.create_task(result)
 
     return HermesEventProcessor(on_event)
