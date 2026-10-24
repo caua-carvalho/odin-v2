@@ -174,6 +174,7 @@ class RunResponse(BaseSchema):
     result_summary: Optional[str] = None
     error: Optional[str] = None
     events: List[Dict[str, Any]] = Field(default_factory=list)
+    queue_position: int = 0
 
 
 class RunEvent(BaseModel):
