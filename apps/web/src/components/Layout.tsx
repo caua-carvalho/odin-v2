@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
-import { cn } from '../lib/utils'
+import { NavLink } from 'react-router-dom'
 import {
-  Compass,
-  Bot,
-  Library,
-  Activity,
-  Cpu,
   LogOut,
   Menu,
-  X,
   Wifi,
   WifiOff,
 } from 'lucide-react'
@@ -18,17 +11,8 @@ import { api } from '../lib/api'
 import { BackgroundParticles } from './react-bits/BackgroundParticles'
 import { DecryptedText } from './react-bits/DecryptedText'
 
-const navigation = [
-  { name: 'Command Center', href: '/', icon: Compass },
-  { name: 'Neural Chat', href: '/chat', icon: Bot },
-  { name: 'Biblioteca', href: '/knowledge', icon: Library },
-  { name: 'Atividade', href: '/activity', icon: Activity },
-  { name: 'Telemetria', href: '/system', icon: Cpu },
-]
-
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth()
-  const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [hermesOnline, setHermesOnline] = useState<boolean | null>(null)
 
