@@ -1,5 +1,8 @@
 # ODIN V2 — Git Ignore
 
+# Odin CLI runtime (PIDs and logs)
+.odin/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -14,6 +17,7 @@ eggs/
 .eggs/
 lib/
 lib64/
+!**/src/lib/
 parts/
 sdist/
 var/
@@ -75,6 +79,14 @@ apps/mobile/.expo/
 apps/mobile/dist/
 apps/mobile/build/
 apps/mobile/*.local
+
+# CLI
+cli/.venv/
+cli/.pytest_cache/
+cli/.mypy_cache/
+cli/.ruff_cache/
+cli/build/
+cli/dist/
 
 # Hermes (existing installation - don't commit)
 # .hermes/ is user's local Hermes installation

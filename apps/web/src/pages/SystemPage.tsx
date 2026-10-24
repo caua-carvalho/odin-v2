@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { api, type SystemStatus } from '../lib/api'
-import { cn, formatRelativeTime } from '../lib/utils'
+import { cn, formatRelativeTime, formatDate } from '../lib/utils'
 import { LoadingScreen } from '../components/LoadingScreen'
+import { SpotlightCard } from '../components/react-bits/SpotlightCard'
+import { DecryptedText } from '../components/react-bits/DecryptedText'
+import { ShinyText } from '../components/react-bits/ShinyText'
+import { AgentOrb } from '../components/common/AgentOrb'
 import {
   Server,
   Database,
@@ -9,11 +13,14 @@ import {
   HardDrive,
   MemoryStick,
   Wifi,
+  WifiOff,
   CheckCircle,
   AlertTriangle,
   RefreshCw,
   Terminal,
   Info,
+  ShieldCheck,
+  Radio,
 } from 'lucide-react'
 
 const COMPONENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -30,24 +37,26 @@ export function SystemPage() {
   const [status, setStatus] = useState<SystemStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<Date>(new Date())
 
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     try {
       const data = await api.getSystemStatus()
       setStatus(data)
+      setLastRefreshedAt(new Date())
     } catch (err) {
-      console.error(err)
+      console.error('Falha ao obter telemetria do sistema:', err)
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     loadStatus()
-    const interval = setInterval(loadStatus, 30000)
+    const interval = setInterval(loadStatus, 20000)
     return () => clearInterval(interval)
-  }, [])
+  }, [loadStatus])
 
   const handleRefresh = () => {
     setRefreshing(true)
@@ -58,115 +67,205 @@ export function SystemPage() {
     return <LoadingScreen />
   }
 
+  const isHealthy = status?.overall === 'ok'
+
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto w-full">
+    <div className="flex flex-col h-full max-w-5xl mx-auto w-full p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 border-b border-odin-graphite-800/80 pb-6">
         <div>
-          <h1 className="text-heading font-regular tracking-tight">Sistema</h1>
-          <p className="text-body text-odin-graphite-400 mt-2">Status dos componentes e saúde do sistema</p>
+          <span className="font-mono text-xs font-semibold text-odin-orange-400 tracking-wider uppercase">
+            <DecryptedText text="TELEMETRIA DO CORE" speed={30} />
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-mono font-bold text-odin-graphite-50 tracking-tight mt-1 flex items-center gap-3">
+            <Radio className="w-6 h-6 text-odin-orange-400" />
+            Diagnóstico e Telemetria
+          </h1>
+          <p className="font-mono text-xs text-odin-graphite-400 mt-1">
+            Status verificado dos subsistemas, links neurais e componentes registrados.
+          </p>
         </div>
+
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="btn-ghost"
+          className="btn btn-ghost font-mono text-xs flex items-center gap-2"
         >
-          <RefreshCw className={cn('w-5 h-5', refreshing && 'animate-spin')} />
-          <span>Atualizar</span>
+          <RefreshCw className={cn('w-4 h-4', refreshing && 'animate-spin text-odin-orange-400')} />
+          <span>ATUALIZAR DIAGNÓSTICO</span>
         </button>
       </div>
 
-      {/* Overall Status - minimal, no card */}
-      <div className="p-6 bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50 mb-10">
-        <div className="flex items-center gap-4">
-          <div className={cn(
-            'w-14 h-14 rounded-xl flex items-center justify-center',
-            status?.overall === 'ok' ? 'bg-odin-emerald-500/20' : 'bg-odin-amber-500/20'
-          )}>
-            {status?.overall === 'ok' ? (
-              <CheckCircle className="w-7 h-7 text-odin-emerald-400" />
-            ) : (
-              <AlertTriangle className="w-7 h-7 text-odin-amber-400" />
-            )}
+      {/* Primary Health Banner */}
+      <SpotlightCard
+        className="p-6"
+        spotlightColor={isHealthy ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)'}
+        borderColor={isHealthy ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'}
+      >
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 font-mono">
+          <div className="flex items-center gap-4">
+            <div
+              className={cn(
+                'w-14 h-14 rounded-xl flex items-center justify-center border',
+                isHealthy
+                  ? 'bg-odin-emerald-500/15 border-odin-emerald-500/30 text-odin-emerald-400 shadow-hud-glow-cyan'
+                  : 'bg-odin-amber-500/20 border-odin-amber-500/40 text-odin-amber-400'
+              )}
+            >
+              {isHealthy ? (
+                <CheckCircle className="w-7 h-7" />
+              ) : (
+                <AlertTriangle className="w-7 h-7 animate-pulse" />
+              )}
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs uppercase text-odin-graphite-400 tracking-wider">
+                  ESTADO GLOBAL DO SISTEMA
+                </span>
+                <span className="text-odin-graphite-600">·</span>
+                <AgentOrb state={isHealthy ? 'completed' : 'waiting_approval'} size={14} />
+              </div>
+              <h2 className="text-xl font-bold tracking-tight text-odin-graphite-50 mt-0.5">
+                <ShinyText
+                  text={isHealthy ? 'TODOS OS SUBSISTEMAS OPERACIONAIS' : 'STATUS EM MODO DEGRADADO'}
+                />
+              </h2>
+              <p className="text-xs text-odin-graphite-400 mt-1">
+                Última consulta: {formatDate(lastRefreshedAt.toISOString())} (
+                {formatRelativeTime(lastRefreshedAt.toISOString())})
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-heading-xs font-regular">
-              Status Geral: <span className={cn(status?.overall === 'ok' ? 'text-odin-emerald-400' : 'text-odin-amber-400')}>
-                {status?.overall === 'ok' ? 'Saudável' : 'Degradado'}
+
+          <div className="flex flex-wrap items-center gap-3 text-xs border-t md:border-t-0 md:border-l border-odin-graphite-800 pt-4 md:pt-0 md:pl-6">
+            {/* Hermes Connection */}
+            <div className="p-3 rounded-lg bg-odin-surface-elevated/70 border border-odin-graphite-800 min-w-[140px]">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-[10px] text-odin-graphite-400">HERMES AGENT</span>
+                {status?.hermes_connected ? (
+                  <Wifi className="w-3.5 h-3.5 text-odin-emerald-400" />
+                ) : (
+                  <WifiOff className="w-3.5 h-3.5 text-odin-crimson-400" />
+                )}
+              </div>
+              <span
+                className={cn(
+                  'font-bold text-xs',
+                  status?.hermes_connected ? 'text-odin-emerald-400' : 'text-odin-crimson-400'
+                )}
+              >
+                {status?.hermes_connected ? 'ONLINE' : 'DESCONECTADO'}
               </span>
-            </h2>
-            <p className="text-body-sm text-odin-graphite-400 mt-1">
-              Última verificação: {status?.timestamp ? formatRelativeTime(status.timestamp) : 'Desconhecido'}
-              {refreshing && <span className="ml-2 text-odin-violet-500">(atualizando...)</span>}
-            </p>
-          </div>
-          <div className="flex-1" />
-          <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-1.5">
-              <div className={cn('w-2 h-2 rounded-full', status?.hermes_connected ? 'bg-odin-emerald-400' : 'bg-odin-crimson-400')} />
-              <span className="text-odin-graphite-300">Hermes</span>
-              <span className="text-white font-medium">{status?.hermes_connected ? 'Conectado' : 'Desconectado'}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <div className={cn('w-2 h-2 rounded-full', status?.database_connected ? 'bg-odin-emerald-400' : 'bg-odin-crimson-400')} />
-              <span className="text-odin-graphite-300">Banco</span>
-              <span className="text-white font-medium">{status?.database_connected ? 'Conectado' : 'Desconectado'}</span>
+
+            {/* Database Connection */}
+            <div className="p-3 rounded-lg bg-odin-surface-elevated/70 border border-odin-graphite-800 min-w-[140px]">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-[10px] text-odin-graphite-400">BANCO DE DADOS</span>
+                <Database className="w-3.5 h-3.5 text-odin-emerald-400" />
+              </div>
+              <span
+                className={cn(
+                  'font-bold text-xs',
+                  status?.database_connected ? 'text-odin-emerald-400' : 'text-odin-crimson-400'
+                )}
+              >
+                {status?.database_connected ? 'CONECTADO' : 'FALHA'}
+              </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-odin-graphite-300">Versão</span>
-              <span className="text-white font-mono">{status?.version || '0.1.0'}</span>
+
+            {/* Core Version */}
+            <div className="p-3 rounded-lg bg-odin-surface-elevated/70 border border-odin-graphite-800 min-w-[100px]">
+              <span className="text-[10px] text-odin-graphite-400 block mb-1">VERSÃO</span>
+              <span className="font-bold text-xs text-odin-orange-400">
+                v{status?.version || '2.4.0'}
+              </span>
             </div>
           </div>
         </div>
+      </SpotlightCard>
+
+      {/* Component Telemetry Cards */}
+      <div className="space-y-3 font-mono">
+        <h3 className="text-xs font-bold text-odin-graphite-300 uppercase tracking-wider flex items-center gap-2">
+          <Terminal className="w-4 h-4 text-odin-orange-400" />
+          Componentes Registrados na API
+        </h3>
+
+        {status?.components && Object.keys(status.components).length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Object.entries(status.components).map(([key, component]) => (
+              <ComponentCard
+                key={key}
+                name={key}
+                component={component}
+                icon={COMPONENT_ICONS[key] || Info}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-odin-surface/80 border border-odin-graphite-800 text-xs text-odin-graphite-400">
+            Nenhum componente individual detalhado reportado pelo endpoint /system/status.
+          </div>
+        )}
       </div>
 
-      {/* Components Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-10">
-        {status?.components && Object.entries(status.components).map(([key, component]) => (
-          <ComponentCard
-            key={key}
-            name={key}
-            component={component}
-            icon={COMPONENT_ICONS[key] || Info}
-          />
-        ))}
+      {/* Technical Architecture Reference (Explicitly labeled) */}
+      <div className="space-y-3 font-mono pt-4 border-t border-odin-graphite-800/80">
+        <h3 className="text-xs font-bold text-odin-graphite-400 uppercase tracking-wider flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-odin-cyan-300" />
+          Especificações da Arquitetura Ativa
+        </h3>
 
-        {/* Additional static info - minimal panels */}
-        <SystemInfoCard title="Backend" items={[
-          { label: 'API', value: 'FastAPI 0.115+' },
-          { label: 'Python', value: '3.12+' },
-          { label: 'Database', value: 'SQLite (aiosqlite)' },
-          { label: 'Auth', value: 'JWT (HS256)' },
-        ]} />
+        <div className="grid gap-3 sm:grid-cols-3 text-xs">
+          <SpotlightCard className="p-4" spotlightColor="rgba(255, 106, 0, 0.05)">
+            <span className="text-[10px] uppercase text-odin-orange-400 font-bold block mb-2">
+              Gateway & Backend
+            </span>
+            <ul className="space-y-1.5 text-odin-graphite-300">
+              <li>Framework: FastAPI 0.115+</li>
+              <li>Runtime: Python 3.12+</li>
+              <li>Armazenamento: SQLite (aiosqlite)</li>
+              <li>Streaming: SSE / EventSource</li>
+            </ul>
+          </SpotlightCard>
 
-        <SystemInfoCard title="Hermes Agent" items={[
-          { label: 'Versão', value: '0.22.2' },
-          { label: 'Protocolo', value: 'WebSocket (/api/pty)' },
-          { label: 'Toolsets', value: 'terminal, file, web, browser, vision, skills, todo, cronjob, memory' },
-          { label: 'Personalidade', value: 'JARVIS (pt-BR)' },
-        ]} />
+          <SpotlightCard className="p-4" spotlightColor="rgba(103, 223, 255, 0.05)">
+            <span className="text-[10px] uppercase text-odin-cyan-300 font-bold block mb-2">
+              Agente Hermes
+            </span>
+            <ul className="space-y-1.5 text-odin-graphite-300">
+              <li>Módulo: Hermes CLI / Agent Core</li>
+              <li>Canal: Subprocess PTY / WS</li>
+              <li>Toolsets: terminal, files, web</li>
+              <li>Segurança: Handshake tokenizado</li>
+            </ul>
+          </SpotlightCard>
 
-        <SystemInfoCard title="Frontend" items={[
-          { label: 'Framework', value: 'React 18 + TypeScript' },
-          { label: 'Build', value: 'Vite 5' },
-          { label: 'Styling', value: 'Tailwind CSS' },
-          { label: 'State', value: 'React Context + Hooks' },
-        ]} />
-      </div>
-
-      {/* Logs section */}
-      <div>
-        <h3 className="text-heading-xs font-regular mb-4">Logs Recentes</h3>
-        <div className="p-4 bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50 font-mono text-code-sm max-h-96 overflow-auto">
-          <p className="text-odin-graphite-500">Logs disponíveis via API: <code className="text-odin-graphite-300">GET /api/logs?file=agent&lines=100</code></p>
-          <p className="text-odin-graphite-500 mt-2">Arquivos: agent, error, access, gateway</p>
+          <SpotlightCard className="p-4" spotlightColor="rgba(255, 154, 61, 0.05)">
+            <span className="text-[10px] uppercase text-odin-orange-400 font-bold block mb-2">
+              Interface Neural
+            </span>
+            <ul className="space-y-1.5 text-odin-graphite-300">
+              <li>Motor: React 18 + Vite</li>
+              <li>Visualizador 3D: React Three Fiber</li>
+              <li>Indicadores: Thinking Orbs</li>
+              <li>HUD: React Bits + Tailwind v3</li>
+            </ul>
+          </SpotlightCard>
         </div>
       </div>
     </div>
   )
 }
 
-function ComponentCard({ name, component, icon: Icon }: {
+function ComponentCard({
+  name,
+  component,
+  icon: Icon,
+}: {
   name: string
   component: { status: string; details?: Record<string, any> }
   icon: React.ComponentType<{ className?: string }>
@@ -174,51 +273,48 @@ function ComponentCard({ name, component, icon: Icon }: {
   const isOk = component.status === 'ok'
 
   return (
-    <div className="p-4 bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50">
+    <div className="p-4 rounded-xl bg-odin-surface/90 border border-odin-graphite-800 hover:border-odin-graphite-700 transition-colors shadow-hud-panel">
       <div className="flex items-start gap-3">
-        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', isOk ? 'bg-odin-emerald-500/20' : 'bg-odin-crimson-500/20')}>
-          <Icon className={cn('w-5 h-5', isOk ? 'text-odin-emerald-400' : 'text-odin-crimson-400')} />
+        <div
+          className={cn(
+            'w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 border',
+            isOk
+              ? 'bg-odin-emerald-500/15 border-odin-emerald-500/30 text-odin-emerald-400'
+              : 'bg-odin-crimson-500/15 border-odin-crimson-500/30 text-odin-crimson-400'
+          )}
+        >
+          <Icon className="w-4 h-4" />
         </div>
+
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className="font-medium capitalize text-white">{name}</h4>
-            <span className={cn(
-              'px-2 py-0.5 rounded-full text-nav-label',
-              isOk ? 'bg-odin-emerald-500/20 text-odin-emerald-400' : 'bg-odin-crimson-500/20 text-odin-crimson-400'
-            )}>
-              {component.status}
+          <div className="flex items-center justify-between gap-1 mb-1">
+            <span className="font-bold text-xs uppercase text-odin-graphite-100 truncate">
+              {name}
+            </span>
+            <span
+              className={cn(
+                'text-[10px] font-bold px-1.5 py-0.2 rounded border',
+                isOk
+                  ? 'bg-odin-emerald-500/15 text-odin-emerald-400 border-odin-emerald-500/30'
+                  : 'bg-odin-crimson-500/15 text-odin-crimson-400 border-odin-crimson-500/30'
+              )}
+            >
+              {component.status.toUpperCase()}
             </span>
           </div>
-          {component.details && (
-            <div className="mt-2 text-caption text-odin-graphite-400 space-y-1">
-              {Object.entries(component.details).slice(0, 4).map(([k, v]) => (
-                <div key={k} className="flex justify-between">
-                  <span>{k.replace(/_/g, ' ')}:</span>
-                  <span className="text-odin-graphite-300 font-mono">{typeof v === 'object' ? JSON.stringify(v) : v}</span>
-                </div>
-              ))}
+
+          {component.details && Object.keys(component.details).length > 0 ? (
+            <div className="mt-2 text-[10px] text-odin-graphite-400 bg-odin-black/50 p-2 rounded border border-odin-graphite-800/60 overflow-x-auto">
+              <pre className="whitespace-pre-wrap leading-relaxed">
+                {JSON.stringify(component.details, null, 2)}
+              </pre>
             </div>
+          ) : (
+            <p className="text-[11px] text-odin-graphite-400 mt-1">
+              Subsistema operando dentro dos parâmetros nominais.
+            </p>
           )}
         </div>
-      </div>
-    </div>
-  )
-}
-
-function SystemInfoCard({ title, items }: { title: string; items: { label: string; value: string }[] }) {
-  return (
-    <div className="p-4 bg-odin-graphite-950/50 rounded-2xl border border-odin-graphite-800/50">
-      <h4 className="font-medium text-white mb-3 flex items-center gap-2">
-        <Info className="w-5 h-5 text-odin-violet-500" />
-        {title}
-      </h4>
-      <div className="space-y-2">
-        {items.map((item, idx) => (
-          <div key={idx} className="flex justify-between text-sm">
-            <span className="text-odin-graphite-400">{item.label}</span>
-            <span className="text-white font-mono">{item.value}</span>
-          </div>
-        ))}
       </div>
     </div>
   )

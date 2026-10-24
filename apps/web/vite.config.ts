@@ -18,4 +18,13 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-core': ['three', '@react-three/fiber'],
+        },
+      },
+    },
+  },
 })
