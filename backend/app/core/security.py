@@ -61,13 +61,32 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+def _is_stream_path(path: str) -> bool:
+    """Only the SSE stream may authenticate via query string.
+
+    ``EventSource`` cannot set an Authorization header. WebSockets use a
+    separate validator in the runs route. Keeping the fallback this narrow
+    avoids leaking JWTs in URLs/logs for ordinary REST calls.
+    """
+    return path.endswith("/events")
+
+
 def get_current_user_id(request: Request) -> str:
-    """Extract user ID from Authorization header."""
+    """Extract user ID from the Authorization header.
+
+    ``EventSource`` cannot set custom headers, so ``?token=`` is accepted as a
+    fallback on the SSE stream endpoint only.
+    """
     auth_header = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
+    token: Optional[str] = None
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header[7:]  # Remove "Bearer "
+    if not token and _is_stream_path(request.url.path):
+        token = request.query_params.get("token")
+
+    if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing or invalid token")
 
-    token = auth_header[7:]  # Remove "Bearer "
     payload = decode_token(token)
     if not payload or payload.get("type") != "access":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
