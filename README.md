@@ -39,6 +39,29 @@ A personal AI assistant with chat, knowledge library, and agent execution capabi
 | **Mobile App** | Expo + React Native + TypeScript | 8081 |
 | **Hermes Agent** | Python (existing installation) | 9119 |
 
+## CLI de desenvolvimento
+
+O diretório [`cli/`](cli/README.md) contém o comando `odin`, que controla os
+quatro serviços em background (PID + logs por serviço), com health checks e
+resolução de dependências:
+
+```bash
+# instala o binário no PATH (código editável)
+uv tool install --editable ./cli
+# ou: pipx install --editable ./cli
+
+odin doctor          # valida binários, venv, .env e dependências
+odin up              # sobe hermes → backend → web + mobile
+odin status          # estado, PID, porta, saúde e uptime
+odin logs backend -f # acompanha o log
+odin restart web     # reinicia apenas o frontend
+odin down            # para apenas o que o CLI iniciou
+```
+
+O CLI reaproveita serviços que já estejam rodando fora dele (aparecem como
+`externo`) e nunca encerra processos que não iniciou. PIDs e logs ficam em
+`.odin/`. Veja a documentação completa em [`cli/README.md`](cli/README.md).
+
 ## Quick Start
 
 ### Prerequisites
@@ -224,6 +247,13 @@ odin-v2/
 │   │   └── schemas/         # Pydantic schemas
 │   ├── tests/               # Pytest tests
 │   └── pyproject.toml
+├── cli/                     # Comando `odin` (Typer)
+│   ├── odin_cli/
+│   │   ├── config.py        # Descoberta do repo e catálogo de serviços
+│   │   ├── process.py       # PIDs, logs, start/stop em background
+│   │   ├── health.py        # Health checks HTTP/TCP
+│   │   └── main.py          # Comandos do CLI
+│   └── README.md
 ├── apps/
 │   ├── web/                 # React web app
 │   │   ├── src/
