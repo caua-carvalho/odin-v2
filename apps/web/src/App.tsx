@@ -1,11 +1,8 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { Layout } from './components/Layout'
 import { LoginPage } from './pages/LoginPage'
-import { ChatPage } from './pages/ChatPage'
-import { KnowledgePage } from './pages/KnowledgePage'
-import { ActivityPage } from './pages/ActivityPage'
-import { SystemPage } from './pages/SystemPage'
+import { HolographicWorkspace } from './components/floating/HolographicWorkspace'
 import { LoadingScreen } from './components/LoadingScreen'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -22,6 +19,16 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function WorkspaceChatRoute() {
+  const { conversationId } = useParams<{ conversationId?: string }>()
+  return (
+    <HolographicWorkspace
+      initialOpenWindow="chat"
+      initialConversationId={conversationId || null}
+    />
+  )
+}
+
 export function App() {
   return (
     <Routes>
@@ -32,12 +39,12 @@ export function App() {
           <PrivateRoute>
             <Layout>
               <Routes>
-                <Route path="/" element={<Navigate to="/chat" replace />} />
-                <Route path="/chat" element={<ChatPage />} />
-                <Route path="/chat/:conversationId" element={<ChatPage />} />
-                <Route path="/knowledge" element={<KnowledgePage />} />
-                <Route path="/activity" element={<ActivityPage />} />
-                <Route path="/system" element={<SystemPage />} />
+                <Route path="/" element={<HolographicWorkspace />} />
+                <Route path="/chat" element={<HolographicWorkspace initialOpenWindow="chat" />} />
+                <Route path="/chat/:conversationId" element={<WorkspaceChatRoute />} />
+                <Route path="/knowledge" element={<HolographicWorkspace initialOpenWindow="knowledge" />} />
+                <Route path="/activity" element={<HolographicWorkspace initialOpenWindow="activity" />} />
+                <Route path="/system" element={<HolographicWorkspace initialOpenWindow="system" />} />
               </Routes>
             </Layout>
           </PrivateRoute>
