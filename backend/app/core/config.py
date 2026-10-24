@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     hermes_session_token: Optional[str] = None
     hermes_ws_timeout: float = 30.0
     hermes_connect_timeout: float = 10.0
+    hermes_run_timeout: float = 3600.0  # safety net per turn (seconds)
 
     # Logging
     log_level: str = "INFO"
