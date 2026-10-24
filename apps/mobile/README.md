@@ -60,7 +60,7 @@ apps/mobile/
 ## Key Features
 
 - **Authentication**: JWT with refresh tokens stored in SecureStore
-- **Chat**: Real-time streaming via SSE (requires backend support)
+- **Chat**: Real-time WebSocket streaming, live tools, inline approvals, queued messages
 - **Knowledge Library**: CRUD for notes, links, snippets, personal info
 - **Activity**: View agent runs, approve/deny operations
 - **System**: Monitor backend, database, Hermes health

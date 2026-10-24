@@ -14,12 +14,12 @@ A personal AI assistant with chat, knowledge library, and agent execution capabi
 │                         │                                    │
 │              ┌──────────▼──────────┐                         │
 │              │  Runs / Executions  │                         │
-│              │  (SSE Streaming)    │                         │
+│              │  SSE (web) / WS (m) │                         │
 │              └──────────┬──────────┘                         │
 │                         │                                    │
 │              ┌──────────▼──────────┐                         │
-│              │  Hermes Adapter     │                         │
-│              │  (WebSocket Proxy)  │                         │
+│              │  Hermes Gateway     │                         │
+│              │  JSON-RPC over WS   │                         │
 │              └──────────┬──────────┘                         │
 └─────────────────────────│────────────────────────────────────┘
                           │
@@ -147,9 +147,11 @@ EXPO_PUBLIC_API_URL=http://127.0.0.1:8000/api
 | POST | `/api/auth/login` | Login |
 | GET | `/api/conversations` | List conversations |
 | POST | `/api/conversations` | Create conversation |
-| POST | `/api/conversations/{id}/runs` | Start agent run (SSE) |
+| POST | `/api/conversations/{id}/runs` | Start agent run (JSON 202) |
+| GET | `/api/conversations/{id}/runs/active` | Current run for reattach |
 | GET | `/api/runs/{id}` | Get run status |
-| GET | `/api/runs/{id}/events` | SSE event stream |
+| GET | `/api/runs/{id}/events` | Replayable SSE event stream |
+| WS | `/api/runs/{id}/ws` | WebSocket event stream (mobile) |
 | POST | `/api/runs/{id}/stop` | Stop run |
 | GET | `/api/approvals` | List pending approvals |
 | POST | `/api/approvals/{id}/approve` | Approve operation |
@@ -160,7 +162,11 @@ EXPO_PUBLIC_API_URL=http://127.0.0.1:8000/api
 
 ## Hermes Integration
 
-The backend communicates with Hermes Agent via WebSocket (`/api/pty` endpoint).
+The backend uses Hermes' structured `tui_gateway` JSON-RPC protocol over a
+single multiplexed WebSocket (`/api/ws`). It streams tokens/tools/approvals to
+clients over SSE (web) or WebSocket (mobile). See
+`docs/hermes-communication.md` for the full protocol, event mapping, approval
+round-trip, queueing and reconnect semantics.
 
 ### Required Hermes Setup
 
@@ -263,11 +269,12 @@ For testing on a physical device:
 
 ## Known Limitations (MVP)
 
-- No push notifications (approvals polled on app open)
+- No push notifications (approvals visible while the app is open)
 - No vector search / RAG for knowledge (basic text search only)
-- Single-user only (no multi-user/workspace support)
-- SSE streaming requires backend to maintain event queues in memory
-- Hermes approval flow proxied via WebSocket (no native REST approval API in Hermes v0.22)
+- Single Odin backend instance (event buses and queues are in-memory)
+- One active run per conversation (later messages are queued)
+- Stream auth uses `?token=` because EventSource/browser WebSocket cannot set headers
+- No native mobile build/device run in this environment (typecheck passes)
 
 ## Future Roadmap
 

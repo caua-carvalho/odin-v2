@@ -38,7 +38,11 @@ Key variables:
 
 ## Hermes Integration
 
-The backend communicates with Hermes via WebSocket (`/api/pty` endpoint).
+The backend uses Hermes' structured `tui_gateway` JSON-RPC protocol over
+WebSocket (`/api/ws`), multiplexed across conversations. See
+`../docs/hermes-communication.md` for handshake, sessions, events, approvals,
+queueing and reconnect behavior.
+
 Hermes must be running with `hermes serve --port 9119 --host 127.0.0.1`.
 
 The `HERMES_SESSION_TOKEN` is automatically read from the `HERMES_DASHBOARD_SESSION_TOKEN` environment variable when Hermes starts, or can be set manually.
@@ -70,8 +74,10 @@ pytest -v
 | `POST /api/auth/login` | Login |
 | `GET /api/conversations` | List conversations |
 | `POST /api/conversations` | Create conversation |
-| `POST /api/conversations/{id}/runs` | Start agent run (SSE) |
+| `POST /api/conversations/{id}/runs` | Start agent run (JSON 202) |
 | `GET /api/runs/{id}` | Get run status |
+| `GET /api/runs/{id}/events` | Replayable SSE stream |
+| `WS /api/runs/{id}/ws` | WebSocket stream (mobile) |
 | `GET /api/approvals` | List pending approvals |
 | `POST /api/approvals/{id}/approve` | Approve operation |
 | `GET /api/knowledge` | List knowledge items |

@@ -16,7 +16,8 @@
 │  └────────┬────────┘         └────────┬────────┘                       │
 └───────────│────────────────────────────│────────────────────────────────┘
             │                            │
-            │        HTTPS / REST + SSE  │
+            │        HTTPS / REST + SSE          │
+            │        WS (mobile run stream)      │
             ▼                            ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                        ODIN BACKEND (FastAPI)                           │
@@ -28,11 +29,11 @@
 │       └────────────┴────────────┴────────────┴────────────┘            │
 │                            │                                            │
 │              ┌─────────────▼─────────────┐                              │
-│              │    Hermes Adapter         │                              │
-│              │  (WebSocket Proxy)        │                              │
+│              │    Hermes Gateway         │                              │
+│              │  (JSON-RPC over WS)       │                              │
 │              │  - Session management     │                              │
-│              │  - Event processing       │                              │
-│              │  - Approval proxy         │                              │
+│              │  - Event normalization    │                              │
+│              │  - Approval round-trip    │                              │
 │              └─────────────┬─────────────┘                              │
 └───────────────────────────│─────────────────────────────────────────────┘
                             │
@@ -59,7 +60,8 @@
 |-------|----------------|
 | **API Routes** | HTTP endpoints, request/response validation |
 | **Services** | Business logic, orchestration |
-| **Hermes Adapter** | WebSocket connection pool, event translation |
+| **Run Manager** | Queueing, replayable event bus, persistence, recovery |
+| **Hermes Gateway** | Single multiplexed JSON-RPC WebSocket, sessions, event translation |
 | **Models** | SQLAlchemy ORM, database schema |
 | **Schemas** | Pydantic v2, serialization/validation |
 | **Security** | JWT, bcrypt, session management |
@@ -87,7 +89,7 @@
 
 - Runs as separate process: `hermes serve --port 9119`
 - Provides tool execution environment
-- WebSocket endpoints for chat (`/api/pty`)
+- Gateway JSON-RPC over WebSocket (`/api/ws`) with sessions, events and approvals
 - Manages toolsets, sessions, approvals
 
 ---
@@ -100,70 +102,65 @@
 User (Web/Mobile)
     │
     ▼
-POST /api/conversations/{id}/runs { message, stream: true }
+POST /api/conversations/{id}/runs { message }
+    │  → 202 JSON, execution continues in background
+    ▼
+Odin Backend / Run Manager
+    ├─ Creates Run (queued or running), user Message, placeholder assistant Message
+    ├─ Enqueues behind the conversation's active run if any
     │
     ▼
-Odin Backend
-    ├─ Creates Run record (status: queued)
-    ├─ Creates user Message
-    ├─ Creates placeholder assistant Message
-    │
-    ▼
-Hermes Adapter
-    ├─ Get/Create WebSocket to Hermes /api/pty
-    ├─ Send user_message frame
+Hermes Gateway (single multiplexed WS)
+    ├─ session.create / session.resume
+    ├─ prompt.submit
     │
     ▼
 Hermes Agent
-    ├─ Process message with tools
-    ├─ Stream tokens via WebSocket
-    ├─ Tool calls/results via WebSocket
-    ├─ Approval requests via WebSocket
+    ├─ Streams message.delta / reasoning.delta
+    ├─ Emits tool.start / tool.complete
+    ├─ Sends approval server requests (srq-*)
+    ├─ Emits message.complete
     │
     ▼
-Hermes Adapter (event processing)
-    ├─ Token events → SSE "token"
-    ├─ Tool calls → SSE "tool_call"
-    ├─ Tool results → SSE "tool_result"
-    ├─ Approval requests → SSE "approval_requested" + DB record
-    ├─ Completion → SSE "run_completed" + update Run
+Run Manager
+    ├─ Normalizes events, assigns per-run seq
+    ├─ Persists tool calls/results and terminal event
+    ├─ Publishes to replayable bus
     │
     ▼
-Client (SSE)
+Client (SSE or WS)
     ├─ Receives streaming tokens
     ├─ Shows tool calls/results
-    ├─ Prompts for approvals
-    ├─ Updates run status
+    ├─ Renders approval card
+    ├─ Reattaches with after=<seq> on reconnect
 ```
 
 ### 3.2 Approval Flow
 
 ```
-Hermes Agent requests approval
+Hermes Agent sends server request:
+{"id":"srq-…","method":"approval","params":{request_id, command, choices}}
     │
     ▼
-Hermes Adapter receives "approval_requested"
+Hermes Gateway indexes srq-* and request_id, publishes approval_requested
     │
     ▼
-Creates Approval record in DB (status: pending)
+Run Manager creates Approval (pending), run → waiting_approval
     │
     ▼
-SSE "approval_requested" to client
+SSE/WS "approval_requested" to client → inline card
     │
     ▼
-User clicks Approve/Deny in UI
+POST /api/approvals/{id}/approve|deny?choice=…
     │
     ▼
-POST /api/approvals/{id}/approve|deny
+Gateway answers the original srq-* frame (fallback: approval.respond)
     │
     ▼
-Hermes Adapter sends "approval" frame to Hermes
+Hermes continues (tool_result) or blocks (denied result)
     │
     ▼
-Hermes continues execution
-    │
-    ▼
-Updates Approval record (status: approved/denied)
+Approval row committed as approved/denied; run returns to running
 ```
 
 ---
@@ -201,7 +198,7 @@ Updates Approval record (status: approved/denied)
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  CLIENT (Browser/Mobile)                                     │
-│  ├─ Access Token (JWT, 15min) in Authorization header       │
+│  ├─ Access Token (JWT, default 7 days) in Authorization header │
 │  └─ Refresh Token in HttpOnly Cookie / SecureStore          │
 │                                                              │
 │  ──────────────── TLS ────────────────                     │
