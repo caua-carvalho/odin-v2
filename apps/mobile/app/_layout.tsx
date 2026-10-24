@@ -1,20 +1,17 @@
 import { StyleSheet } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { providers } from 'nativewind'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Slot } from 'expo-router'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider } from '../contexts/AuthContext'
 import './global.css'
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <providers>
-          <AuthProvider>
-            <Slot />
-          </AuthProvider>
-        </providers>
+        <AuthProvider>
+          <Slot />
+        </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   )

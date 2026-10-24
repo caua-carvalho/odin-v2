@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, FlatList, Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { cn, formatRelativeTime } from '../lib/utils'
-import { api, type KnowledgeItem } from '../lib/api'
+import { cn, formatRelativeTime } from '../../lib/utils'
+import { api, type KnowledgeItem } from '../../lib/api'
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
@@ -325,11 +325,11 @@ export default function KnowledgeScreen() {
             <View style={styles.formGroup}>
               <Text style={styles.label}>Título <Text style={{ color: '#e05600' }}>*</Text></Text>
               <TextInput
-                style={[styles.input, formErrors.title && styles.inputError]}
+                style={[styles.input, formErrors.title ? styles.inputError : null]}
                 value={formData.title}
                 onChangeText={text => setFormData(prev => ({ ...prev, title: text }))}
                 placeholder="Título do item"
-                disabled={!!editingItem}
+                editable={!editingItem}
               />
               {formErrors.title && <Text style={styles.errorText}>{formErrors.title}</Text>}
             </View>
@@ -337,7 +337,7 @@ export default function KnowledgeScreen() {
             <View style={styles.formGroup}>
               <Text style={styles.label}>Conteúdo <Text style={{ color: '#e05600' }}>*</Text></Text>
               <TextInput
-                style={[styles.input, formErrors.content && styles.inputError]}
+                style={[styles.input, formErrors.content ? styles.inputError : null]}
                 value={formData.content}
                 onChangeText={text => setFormData(prev => ({ ...prev, content: text }))}
                 placeholder="Conteúdo do item"
@@ -351,7 +351,7 @@ export default function KnowledgeScreen() {
               <View style={styles.formGroup}>
                 <Text style={styles.label}>URL</Text>
                 <TextInput
-                  style={[styles.input, formErrors.url && styles.inputError]}
+                  style={[styles.input, formErrors.url ? styles.inputError : null]}
                   value={formData.url}
                   onChangeText={text => setFormData(prev => ({ ...prev, url: text }))}
                   placeholder="https://exemplo.com"

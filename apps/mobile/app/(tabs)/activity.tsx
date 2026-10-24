@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, FlatList, Alert, ActivityIndicator, Modal } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { cn, formatRelativeTime, formatDate } from '../lib/utils'
-import { api, type Run, type Approval, type RunEvent } from '../lib/api'
+import { cn, formatRelativeTime, formatDate } from '../../lib/utils'
+import { api, type Run, type Approval, type RunEvent } from '../../lib/api'
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#686868', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, paddingHorizontal: 16, marginTop: 8 },
 })
 
-const RUN_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+const RUN_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentProps<typeof Ionicons>['name'] }> = {
   queued: { label: 'Na fila', color: '#686868', bg: '#181818', icon: 'time' },
   running: { label: 'Executando', color: '#ff6b00', bg: '#ff6b0020', icon: 'refresh' },
   waiting_approval: { label: 'Aguardando aprovação', color: '#ffaa00', bg: '#ffaa0020', icon: 'alert-circle' },
@@ -69,7 +69,7 @@ const RUN_STATUS_CONFIG: Record<string, { label: string; color: string; bg: stri
   interrupted: { label: 'Interrompido', color: '#686868', bg: '#181818', icon: 'flash' },
 }
 
-const APPROVAL_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+const APPROVAL_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ComponentProps<typeof Ionicons>['name'] }> = {
   pending: { label: 'Pendente', color: '#ffaa00', bg: '#ffaa0020', icon: 'time' },
   approved: { label: 'Aprovado', color: '#00d47e', bg: '#00d47e20', icon: 'checkmark-circle' },
   denied: { label: 'Negado', color: '#e05600', bg: '#e0560020', icon: 'close-circle' },

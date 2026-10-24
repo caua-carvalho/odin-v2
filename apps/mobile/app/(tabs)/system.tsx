@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { cn, formatRelativeTime } from '../lib/utils'
-import { api, type SystemStatus } from '../lib/api'
+import { cn, formatRelativeTime } from '../../lib/utils'
+import { api, type SystemStatus } from '../../lib/api'
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0a0a0a' },
@@ -40,13 +40,13 @@ const styles = StyleSheet.create({
   loadingOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(10,10,10,0.9)', justifyContent: 'center', alignItems: 'center', zIndex: 100 },
 })
 
-const COMPONENT_ICONS: Record<string, string> = {
+const COMPONENT_ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name']> = {
   gateway: 'server',
   dashboard: 'desktop',
-  storage: 'database',
+  storage: 'server',
   platforms: 'wifi',
   memory: 'hardware-chip',
-  disk: 'hard-drive',
+  disk: 'save',
   cpu: 'cube',
 }
 

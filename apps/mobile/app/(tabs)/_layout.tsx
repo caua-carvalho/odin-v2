@@ -1,4 +1,4 @@
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '../../contexts/AuthContext'
 import { Redirect } from 'expo-router'
 import { Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -50,7 +50,7 @@ export default function TabsLayout() {
         options={{
           title: 'Atividade',
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? 'activity' : 'activity-outline'} size={24} color={color} />
+            <Ionicons name={focused ? 'pulse' : 'pulse-outline'} size={24} color={color} />
           ),
         }}
       />

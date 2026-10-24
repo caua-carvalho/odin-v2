@@ -91,7 +91,7 @@ export default function LoginScreen() {
               autoCapitalize="none"
               keyboardType="email-address"
               autoComplete="email"
-              disabled={loading || authLoading}
+              editable={!loading && !authLoading}
             />
           </View>
         </View>
@@ -108,7 +108,7 @@ export default function LoginScreen() {
               placeholderTextColor="#686868"
               secureTextEntry={!showPassword}
               autoComplete="current-password"
-              disabled={loading || authLoading}
+              editable={!loading && !authLoading}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
               <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color="#686868" />
