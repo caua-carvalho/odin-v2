@@ -1,0 +1,12 @@
+[submodule "apps/web"]
+	path = apps/web
+	url = git@github.com:caua-carvalho/odin-web.git
+	branch = main
+[submodule "apps/mobile"]
+	path = apps/mobile
+	url = git@github.com:caua-carvalho/odin-mobile.git
+	branch = main
+[submodule "backend"]
+	path = backend
+	url = git@github.com:caua-carvalho/odin-backend.git
+	branch = main

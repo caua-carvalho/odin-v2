@@ -1,8 +1,19 @@
 # ODIN V2 — Personal AI Assistant
 
-A personal AI assistant with chat, knowledge library, and agent execution capabilities, powered by Hermes Agent.
+|A personal AI assistant with chat, knowledge library, and agent execution capabilities, powered by Hermes Agent.
 
-## Architecture
+## Arquitetura
+
+```
+odin-v2/  (raiz do projeto)
+├── cli/            ✝️  comando "odin" (orquestração dos serviços)
+├── docs/           documentação
+├── scripts/        utilitários
+├── .gitmodules     ← subscritos (submodules)
+├── apps/web/       → repositório `odin-web`   (React + Vite)   :5173
+├── apps/mobile/    → repositório `odin-mobile`(Expo)            :8081
+└── backend/        → repositório `odin-backend` (FastAPI)       :8000
+```
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -30,20 +41,23 @@ A personal AI assistant with chat, knowledge library, and agent execution capabi
               └───────────────────────┘
 ```
 
-## Components
+## Componentes
 
-| Component | Tech Stack | Port |
-|-----------|------------|------|
-| **Backend** | FastAPI + SQLAlchemy + SQLite | 8000 |
-| **Web App** | React 18 + TypeScript + Vite | 5173 |
-| **Mobile App** | Expo + React Native + TypeScript | 8081 |
-| **Hermes Agent** | Python (existing installation) | 9119 |
+| Component | Tech Stack | Port | Repositório |
+|-----------|------------|------|-------------|
+| **Backend** | FastAPI + SQLAlchemy + SQLite | 8000 | `odin-backend` |
+| **Web App** | React 18 + TypeScript + Vite | 5173 | `odin-web` |
+| **Mobile App** | Expo + React Native + TypeScript | 8081 | `odin-mobile` |
+| **Hermes Agent** | Python (existing installation) | 9119 | n/a (instalação local) |
+
+> Cada componente vive em seu próprio repositório, registrado como `git submodule` no
+> repositório monorepo principal. O CLI `odin` continua a orquestrar tudo por cima.
 
 ## CLI de desenvolvimento
 
-O diretório [`cli/`](cli/README.md) contém o comando `odin`, que controla os
-quatro serviços em background (PID + logs por serviço), com health checks e
-resolução de dependências:
+O diretório [`cli/`](cli/README.md) contém o comando `odin`, que controla os quatro
+serviços em background (PID + logs por serviço), com health checks e resolução de
+dependências:
 
 ```bash
 # instala o binário no PATH (código editável)
@@ -59,8 +73,8 @@ odin down            # para apenas o que o CLI iniciou
 ```
 
 O CLI reaproveita serviços que já estejam rodando fora dele (aparecem como
-`externo`) e nunca encerra processos que não iniciou. PIDs e logs ficam em
-`.odin/`. Veja a documentação completa em [`cli/README.md`](cli/README.md).
+`externo`) e nunca encerra processos que não iniciou. PIDs e logs ficam em `.odin/`.
+Veja a documentação completa em [`cli/README.md`](cli/README.md).
 
 ## Quick Start
 
@@ -68,31 +82,32 @@ O CLI reaproveita serviços que já estejam rodando fora dele (aparecem como
 
 - Python 3.12+
 - Node.js 18+
-- Hermes Agent installed and running (`hermes serve --port 9119`)
+- Hermes Agent instalado e em execução (`hermes serve --port 9119`)
 
-### 1. Start Hermes Agent
+### 1. Iniciar Hermes Agent
 
 ```bash
 hermes serve --port 9119 --host 127.0.0.1
 ```
 
-Verify it's running:
+Verificar se está rodando:
+
 ```bash
 curl http://127.0.0.1:9119/api/health
 ```
 
-### 2. Start Backend
+### 2. Iniciar Backend
 
 ```bash
 cd backend
 cp ../.env.example .env
-# Edit .env - generate SECRET_KEY: python -c "import secrets; print(secrets.token_urlsafe(32))"
+# Editar .env - gerar SECRET_KEY: python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 pip install -e ".[dev]"
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### 3. Start Web App
+### 3. Iniciar Web App
 
 ```bash
 cd apps/web
@@ -100,20 +115,20 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:5173
+Abra http://127.0.0.1:5173
 
-### 4. Start Mobile App
+### 4. Iniciar Mobile App
 
 ```bash
 cd apps/mobile
 cp .env.example .env
-# Edit .env with your API URL
+# Editar .env com a URL da API
 
 npm install
 npm start
 ```
 
-Scan QR code with Expo Go app, or press `a` for Android emulator, `i` for iOS simulator.
+Escaneie o QR code com o app Expo Go, ou pressione `a` para Android e `i` para iOS.
 
 ## Environment Variables
 
@@ -238,46 +253,37 @@ npm run lint
 
 ```
 odin-v2/
-├── backend/                 # FastAPI backend
+├── .gitmodules            # Subscrições para os repositórios separados
+├── cli/                   # Comando "odin" (Typer) — orquestração
+├── docs/                  # Documentação
+│   ├── api-contract.md    # Especificação da API
+│   ├── architecture.md    # Arquitetura do sistema
+│   └── environment.md     # Relatório de ambiente
+├── scripts/               # Scripts de utilidade
+├── tests/                 # Testes do CLI
+├── backend/               # FastAPI API (submódulo de odin-backend)
 │   ├── app/
-│   │   ├── api/routes/      # API endpoints
-│   │   ├── core/            # Config, DB, Security
-│   │   ├── integrations/hermes/  # Hermes WebSocket adapter
-│   │   ├── models/          # SQLAlchemy models
-│   │   └── schemas/         # Pydantic schemas
-│   ├── tests/               # Pytest tests
-│   └── pyproject.toml
-├── cli/                     # Comando `odin` (Typer)
-│   ├── odin_cli/
-│   │   ├── config.py        # Descoberta do repo e catálogo de serviços
-│   │   ├── process.py       # PIDs, logs, start/stop em background
-│   │   ├── health.py        # Health checks HTTP/TCP
-│   │   └── main.py          # Comandos do CLI
-│   └── README.md
-├── apps/
-│   ├── web/                 # React web app
-│   │   ├── src/
-│   │   │   ├── components/  # Reusable components
-│   │   │   ├── contexts/    # React contexts (Auth)
-│   │   │   ├── hooks/       # Custom hooks
-│   │   │   ├── lib/         # API client, utils
-│   │   │   └── pages/       # Page components
-│   │   └── package.json
-│   └── mobile/              # Expo mobile app
-│       ├── app/             # Expo Router screens
-│       │   ├── (tabs)/      # Tab screens
-│       │   └── login.tsx
-│       ├── contexts/        # Auth context
-│       ├── lib/             # API client, utils
-│       └── package.json
-├── docs/
-│   ├── api-contract.md      # API specification
-│   ├── architecture.md      # Architecture docs
-│   └── environment.md       # Environment report
-├── scripts/                 # Utility scripts
-├── .env.example
-├── .gitignore
-└── README.md
+│   │   ├── api/routes/    # Endpoints da API
+│   │   ├── core/          # Config, DB, Segurança
+│   │   ├── integrations/hermes/  # Adapter do Hermes
+│   │   ├── models/        # SQLAlchemy models
+│   │   └── schemas/       # Pydantic schemas
+│   └── ...
+├── apps/web/              # Aplicação web (submódulo de odin-web)
+│   ├── src/
+│   │   ├── components/    # Componentes reutilizáveis
+│   │   ├── contexts/      # React contexts (Auth)
+│   │   ├── hooks/         # Hooks customizados
+│   │   ├── lib/           # Cliente API, utils
+│   │   └── pages/         # Componentes de páginas
+│   └── ...
+└── apps/mobile/           # Aplicação mobile (submódulo de odin-mobile)
+    ├── app/               # Telas Expo Router
+    │   ├── (tabs)/        # Telas de abas
+    │   └── login.tsx
+    ├── contexts/          # Contexto de Auth
+    ├── lib/               # Cliente API, utils
+    └── ...
 ```
 
 ## Security
