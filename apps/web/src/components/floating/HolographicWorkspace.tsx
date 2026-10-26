@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { WindowId, WindowState, WorkspaceLayout, WindowPosition, WindowSize } from './floating.types'
 import { FloatingCard } from './FloatingCard'
 import { FloatingDock } from './FloatingDock'
-import { CoreVisualizer } from '../core/CoreVisualizer'
+import { AgentOrb } from '../common/AgentOrb'
 import { type CoreState } from '../core/core.types'
 import { ChatPanel } from '../../features/chat/ChatPanel'
 import { KnowledgePanel } from '../../features/knowledge/KnowledgePanel'
@@ -312,11 +312,10 @@ export function HolographicWorkspace({
           </h2>
         </div>
 
-        <CoreVisualizer
+        <AgentOrb
           state={computedCoreState}
-          statusText={coreStatusText}
-          size="xl"
-          showStatusBadge={visibleCount === 0}
+          label={coreStatusText}
+          size={328}
         />
       </div>
 
