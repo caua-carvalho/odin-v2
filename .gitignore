@@ -59,27 +59,6 @@ Thumbs.db
 logs/
 *.log
 
-# Backend
-backend/.coverage
-backend/htmlcov/
-backend/.pytest_cache/
-backend/.mypy_cache/
-backend/.ruff_cache/
-
-# Web
-apps/web/node_modules/
-apps/web/dist/
-apps/web/build/
-apps/web/.vite/
-apps/web/*.local
-
-# Mobile
-apps/mobile/node_modules/
-apps/mobile/.expo/
-apps/mobile/dist/
-apps/mobile/build/
-apps/mobile/*.local
-
 # CLI
 cli/.venv/
 cli/.pytest_cache/
