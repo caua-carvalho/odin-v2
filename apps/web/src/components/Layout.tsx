@@ -94,9 +94,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-odin-surface-elevated/70 border border-odin-graphite-800 text-odin-graphite-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-odin-cyan-300 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-odin-orange-400 animate-pulse" />
             <span>NODE:</span>
-            <span className="text-odin-cyan-300 font-semibold">JARVIS-CORE</span>
+            <span className="text-odin-orange-400 font-semibold">ODIN-CORE</span>
           </div>
         </div>
 

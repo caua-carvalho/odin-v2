@@ -351,7 +351,7 @@ export function CommandCenterPage() {
         </form>
 
         <div className="flex items-center justify-between mt-2 px-2 text-[11px] font-mono text-odin-graphite-500">
-          <span>INTERFACE NEURAL JARVIS · V2</span>
+          <span>INTERFACE NEURAL ODIN · V2</span>
           <span>PRESSIONE ENTER PARA DISPARAR</span>
         </div>
       </div>

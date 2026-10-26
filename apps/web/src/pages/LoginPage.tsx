@@ -63,7 +63,7 @@ export function LoginPage() {
             <DecryptedText text="TERMINAL DE ACESSO ODIN" speed={30} />
           </span>
           <h1 className="text-2xl font-bold tracking-tight text-odin-graphite-50 mt-1">
-            <ShinyText text="ODIN V2 · JARVIS CORE" />
+            <ShinyText text="ODIN V2" />
           </h1>
           <p className="text-xs text-odin-graphite-400 mt-1">
             Autenticação de operador para comandos neurais

@@ -194,7 +194,7 @@ export default function SystemScreen() {
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Personalidade</Text>
-            <Text style={styles.infoValue}>JARVIS (pt-BR)</Text>
+            <Text style={styles.infoValue}>ODIN (pt-BR)</Text>
           </View>
         </View>
 
