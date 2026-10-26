@@ -10,6 +10,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: ['odin.markhor-tone.ts.net'],
     port: 5173,
     proxy: {
       '/api': {
