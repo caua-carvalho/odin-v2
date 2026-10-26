@@ -27,6 +27,9 @@ import logging
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+import re
+from urllib.parse import urlencode
+
 import httpx
 import websockets
 from websockets.exceptions import ConnectionClosed, WebSocketException
@@ -97,7 +100,44 @@ class HermesGateway:
     def connected(self) -> bool:
         return not self._closed and self._ws is not None
 
+    
+    async def _refresh_session_token(self) -> str:
+        """Fetch the current session token from the Hermes dashboard."""
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                response = await client.get(f"{self.base_url}/")
+                response.raise_for_status()
+        except httpx.HTTPError as exc:
+            raise HermesUnavailable(
+                "Não foi possível obter o token atual do Hermes."
+            ) from exc
+
+        match = re.search(
+            r"""__HERMES_SESSION_TOKEN__\s*=\s*["']([^"']+)["']""",
+            response.text,
+        )
+
+        if not match:
+            raise HermesUnavailable(
+                "Token de sessão não encontrado na página do Hermes."
+            )
+
+        self.session_token = match.group(1)
+        return self.session_token
+
     def _ws_url(self) -> str:
+        ws_base = (
+            self.base_url
+            .replace("http://", "ws://", 1)
+            .replace("https://", "wss://", 1)
+        )
+        url = f"{ws_base}/api/ws"
+
+        if self.session_token:
+            url += "?" + urlencode({"token": self.session_token})
+
+        return url
+
         ws_base = self.base_url.replace("http://", "ws://").replace("https://", "wss://")
         url = f"{ws_base}/api/ws"
         if self.session_token:
@@ -110,8 +150,14 @@ class HermesGateway:
             if self.connected:
                 return
 
+            await self._refresh_session_token()
             url = self._ws_url()
-            logger.info("Connecting to Hermes gateway at %s", url.split("?", 1)[0])
+
+            logger.info(
+                "Connecting to Hermes gateway at %s",
+                url.split("?", 1)[0],
+            )
+
             try:
                 ws = await asyncio.wait_for(
                     websockets.connect(
@@ -549,6 +595,7 @@ class HermesGateway:
 
     async def health_check(self) -> bool:
         try:
+            await self._refresh_session_token()
             async with httpx.AsyncClient(timeout=5.0) as client:
                 response = await client.get(f"{self.base_url}/api/health", headers=self._headers())
                 return response.status_code == 200
@@ -557,6 +604,7 @@ class HermesGateway:
 
     async def get_system_status(self) -> Optional[dict]:
         try:
+            await self._refresh_session_token()
             async with httpx.AsyncClient(timeout=5.0) as client:
                 response = await client.get(f"{self.base_url}/api/status", headers=self._headers())
                 if response.status_code == 200:
