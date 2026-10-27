@@ -234,10 +234,14 @@ def restart(
         bool,
         typer.Option("--wait/--no-wait", help="Aguardar o serviço ficar saudável."),
     ] = True,
+    deps: Annotated[
+        bool,
+        typer.Option("--deps/--no-deps", help="Iniciar também as dependências."),
+    ] = True,
 ) -> None:
     """Reinicia os serviços indicados (padrão: todos)."""
     _down_impl(services, timeout=10.0, force=False)
-    _up_impl(services, host, timeout, wait, deps=True)
+    _up_impl(services, host, timeout, wait, deps)
 
 
 @app.command()
