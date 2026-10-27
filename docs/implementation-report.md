@@ -345,7 +345,7 @@ dist/assets/index-DxAWtYJp.js   323.63 kB │ gzip: 100.49 kB
 
 - ✅ Hermes credentials never leave backend (`HERMES_SESSION_TOKEN` in env only)
 - ✅ JWT tokens: 7-day access + 30-day refresh, both configurable (refresh in HttpOnly cookie)
-- ✅ Passwords: bcrypt (passlib)
+- ✅ Passwords: bcrypt (direct `bcrypt` API; no passlib)
 - ✅ CORS restricted to configured origins
 - ✅ Rate limiting on auth endpoints (10 req/min)
 - ✅ Input validation via Pydantic on all endpoints
