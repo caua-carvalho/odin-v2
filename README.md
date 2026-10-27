@@ -47,7 +47,7 @@ odin-v2/  (raiz do projeto)
 |-----------|------------|------|-------------|
 | **Backend** | FastAPI + SQLAlchemy + SQLite | 8000 | `odin-backend` |
 | **Web App** | React 18 + TypeScript + Vite | 5173 | `odin-web` |
-| **Mobile App** | Expo + React Native + TypeScript | 8081 | `odin-mobile` |
+| **Mobile App** | Expo SDK 58 + React Native 0.88 + TypeScript | 8081 | `odin-mobile` |
 | **Hermes Agent** | Python (existing installation) | 9119 | n/a (instalação local) |
 
 > Cada componente vive em seu próprio repositório, registrado como `git submodule` no
@@ -81,7 +81,7 @@ Veja a documentação completa em [`cli/README.md`](cli/README.md).
 ### Prerequisites
 
 - Python 3.12+
-- Node.js 18+
+- Node.js 22.13+ LTS (Expo SDK 58 requires a modern LTS release)
 - Hermes Agent instalado e em execução (`hermes serve --port 9119`)
 
 ### 1. Iniciar Hermes Agent
@@ -105,6 +105,7 @@ cp ../.env.example .env
 
 pip install -e ".[dev]"
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+# Para testar o mobile em um celular na mesma rede, use --host 0.0.0.0
 ```
 
 ### 3. Iniciar Web App
@@ -120,15 +121,40 @@ Abra http://127.0.0.1:5173
 ### 4. Iniciar Mobile App
 
 ```bash
-cd apps/mobile
-cp .env.example .env
-# Editar .env com a URL da API
+# Para uso no celular via Expo Go, o backend precisa aceitar conexões da LAN:
+#   cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
+cd apps/mobile
 npm install
 npm start
 ```
 
+A URL da API é detectada automaticamente a partir do host do Metro (porta 8000).
+Para sobrescrever, copie `.env.example` para `.env` e defina `EXPO_PUBLIC_API_URL`.
+
 Escaneie o QR code com o app Expo Go, ou pressione `a` para Android e `i` para iOS.
+O cliente mobile é um companion do web: cobre Nexus, chat com streaming, aprovações,
+biblioteca, atividade e telemetria, mas não substitui o workspace multi-janela do web.
+Detalhes em [`apps/mobile/README.md`](apps/mobile/README.md) e
+[`docs/mobile-parity.md`](docs/mobile-parity.md).
+
+### APK Android + atualizações OTA
+
+O mobile também é distribuído como **APK via EAS Build**. O APK já embute o
+`expo-updates`, então correções de JS/telas são publicadas com **EAS Update** no
+canal `preview` e chegam sem gerar outro APK:
+
+```bash
+cd apps/mobile
+npm run build:apk                                  # APK inicial
+npm run ota:preview -- -m "feat: minha mudança"    # atualização OTA
+```
+
+No primeiro uso, o app abre a folha **Servidor ODIN** para informar o backend
+(ex.: `http://192.168.1.9:8000/api`). Para acesso via celular na LAN, suba o
+backend com `--host 0.0.0.0`. Mudanças nativas (novas libs `expo-*`, permissões,
+SDK) ainda exigem um novo build. Guia completo em
+[`apps/mobile/README.md`](apps/mobile/README.md#apk-instalável--atualizações-ota-eas-update).
 
 ## Environment Variables
 
@@ -145,8 +171,10 @@ DATABASE_URL=sqlite+aiosqlite:///./odin.db
 # Security (REQUIRED - generate with: python -c "import secrets; print(secrets.token_urlsafe(32))")
 SECRET_KEY=your-32-char-secret-key
 
-# CORS
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,exp://192.168.1.0/24:8081
+# CORS (comma-separated; must include the public web origin in production)
+CORS_ORIGINS_RAW=http://localhost:5173,http://127.0.0.1:5173,exp://192.168.1.0/24:8081
+# Production example: CORS_ORIGINS_RAW=https://odin.example.com
+
 
 # Hermes Integration
 HERMES_API_URL=http://127.0.0.1:9119
@@ -156,8 +184,24 @@ HERMES_API_URL=http://127.0.0.1:9119
 ### Web (.env)
 
 ```env
-VITE_API_URL=http://127.0.0.1:8000/api
+# URL da API usada pelo navegador.
+# - Desenvolvimento com Vite proxy: deixe /api (padrão)
+# - Web e API no mesmo domínio/reverse proxy: /api
+# - API em outro domínio: https://api.example.com/api
+VITE_API_URL=/api
+
+# Endereço do backend visto pelo processo do Vite (proxy de desenvolvimento).
+# Padrão: http://127.0.0.1:8000. No servidor, use um endereço alcançável a
+# partir de onde o Vite roda (containers: http://backend:8000 ou
+# http://host.docker.internal:8000; outra interface: IP do Tailscale/LAN).
+VITE_API_PROXY_TARGET=http://127.0.0.1:8000
 ```
+
+> Em produção prefira `npm run build` e servir `dist/` pelo reverse proxy,
+> encaminhando `/api` para o backend. Se usar o servidor de desenvolvimento do
+> Vite no servidor, `VITE_API_PROXY_TARGET` precisa apontar para um endereço
+> que o processo do Vite consiga alcançar — caso contrário **todas** as rotas
+> `/api` retornam 500 (inclusive `/api/health`), mesmo com o backend saudável.
 
 ### Mobile (.env)
 
