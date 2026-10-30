@@ -111,9 +111,20 @@ Key settings:
 | Hermes Dashboard | `http://127.0.0.1:9119` | Local only |
 | Odin Backend (planned) | `http://127.0.0.1:8000` | Local dev |
 | Odin Web (planned) | `http://127.0.0.1:5173` | Vite dev server |
-| Odin Mobile (planned) | `exp://192.168.x.x:8081` | Expo dev, LAN access |
+| Odin Mobile | `exp://192.168.x.x:8081` | Expo SDK 58 / Expo Go, LAN access |
 
-**Mobile Access:** Backend must bind `0.0.0.0:8000` for LAN access from phone. Document in README.
+**Mobile Access:** Backend must bind `0.0.0.0:8000` for LAN access from a phone:
+
+```bash
+cd backend
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Expo Go on a physical device cannot reach the host machine through `127.0.0.1`.
+When `EXPO_PUBLIC_API_URL` is unset or points at loopback, the mobile app derives
+the API host from the Expo/Metro `hostUri` and uses port `8000`, so the backend
+must be reachable on the same LAN. Set `EXPO_PUBLIC_API_URL` explicitly to
+override this behavior (e.g. a tunnel or a non-default port).
 
 ---
 
@@ -149,11 +160,11 @@ Key settings:
 
 1. ✅ Environment documented
 2. ✅ API contract defined (`docs/api-contract.md`)
-3. ⏳ Create backend scaffold (FastAPI, SQLAlchemy, Pydantic)
-4. ⏳ Implement Hermes adapter (WebSocket client)
-5. ⏳ Implement auth, conversations, runs, approvals, knowledge
-6. ⏳ Create web app scaffold (React + Vite + TS)
-7. ⏳ Create mobile app scaffold (Expo + RN + TS)
+3. ✅ Create backend scaffold (FastAPI, SQLAlchemy, Pydantic)
+4. ✅ Implement Hermes adapter (WebSocket client)
+5. ✅ Implement auth, conversations, runs, approvals, knowledge
+6. ✅ Create web app scaffold (React + Vite + TS)
+7. ✅ Create mobile app scaffold (Expo SDK 58 + RN + TS)
 8. ⏳ Parallel development of three fronts
 9. ⏳ Integration testing
 
